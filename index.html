@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DSSSB PYQ - Mock Tests</title>
+<title>PYQ Notes - Mock Tests</title>
 
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -295,7 +295,7 @@ textarea { height: 120px; resize: none; }
 <div id="appLoginModal" class="full-overlay" style="display:none;">
     <div class="login-card">
         <div style="font-size:50px; margin-bottom:15px;">🎓</div>
-        <h2 style="margin:0 0 5px 0; color:var(--text-main); font-weight:800;">Welcome to DSSSB PYQ</h2>
+        <h2 style="margin:0 0 5px 0; color:var(--text-main); font-weight:800;">Welcome to PYQ Notes</h2>
         <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;">Create your quick profile to start giving mock tests & track your rank.</p>
         
         <div style="text-align:left; margin-bottom:5px; font-size:12px; font-weight:700; margin-left:5px; color:var(--text-muted);">Full Name</div>
@@ -317,7 +317,7 @@ textarea { height: 120px; resize: none; }
 <div id="toast"></div>
 
 <div class="news-container" id="newsSection" style="display:none;">
-    <span>📢</span> <marquee id="newsText" scrollamount="5">Welcome to DSSSB PYQ Portal!</marquee>
+    <span>📢</span> <marquee id="newsText" scrollamount="5">Welcome to PYQ Notes Portal!</marquee>
 </div>
 
 <div id="loader">
@@ -352,7 +352,7 @@ textarea { height: 120px; resize: none; }
             <div style="display:flex; align-items:center; gap:10px;">
                 <i class="fas fa-arrow-alt-circle-down" style="font-size:24px;"></i>
                 <div style="text-align:left;">
-                    <div style="font-weight:800; font-size:14px;" id="pwaBannerTitle">Install DSSSB PYQ</div>
+                    <div style="font-weight:800; font-size:14px;" id="pwaBannerTitle">Install PYQ Notes</div>
                     <div style="font-size:11px; opacity:0.9;" id="pwaBannerDesc">Fast access & better experience</div>
                 </div>
             </div>
@@ -660,7 +660,7 @@ textarea { height: 120px; resize: none; }
 <div id="paymentModal" class="modal">
     <div class="modal-content" style="text-align:center;">
         <div style="font-size: 50px; margin-bottom: 10px;">👑</div>
-        <h2 style="color:var(--warning); margin-bottom:5px; font-weight:900;">Upgrade to DSSSB PRO</h2>
+        <h2 style="color:var(--warning); margin-bottom:5px; font-weight:900;">Upgrade to PRO</h2>
         <p style="font-size:13px; color:var(--text-muted); margin-bottom:15px; font-weight:600;">Unlock All Premium Mock Tests, Video Classes & PDF Notes!</p>
         
         <div style="background:var(--primary-light); color:var(--primary-dark); padding:12px; border-radius:12px; margin-bottom:15px; font-size: 14px; font-weight: 700;">
@@ -1005,7 +1005,7 @@ function startCountdown() {
 }
 
 function shareApp() {
-    if (navigator.share) navigator.share({ title: 'DSSSB PYQ Portal', text: 'Best Exam Prep App!', url: window.location.href });
+    if (navigator.share) navigator.share({ title: 'PYQ Notes Portal', text: 'Best Exam Prep App!', url: window.location.href });
     else { navigator.clipboard.writeText(window.location.href); showToast("Link copied to clipboard!"); }
 }
 
@@ -1018,7 +1018,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     const banner = document.getElementById('pwaBanner');
     banner.style.display = 'flex';
     banner.style.background = 'var(--primary)';
-    document.getElementById('pwaBannerTitle').innerHTML = 'Install DSSSB PYQ';
+    document.getElementById('pwaBannerTitle').innerHTML = 'Install PYQ Notes';
     document.getElementById('pwaBannerDesc').innerHTML = 'Fast access & better experience';
     document.getElementById('pwaBannerBtn').innerHTML = 'Install Now';
     document.getElementById('pwaBannerBtn').style.color = 'var(--primary)';
@@ -1476,7 +1476,7 @@ function filterTests(cat, el, searchQuery = "") {
                     <button class="save-btn ${isSaved?'saved':''}" onclick="toggleSaveTest('${t.dbKey}', this, event)">
                         ${isSaved?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>'}
                     </button>
-                    <div class="t-title">${t.title || 'DSSSB Mock Test'}</div>
+                    <div class="t-title">${t.title || 'PYQ Mock Test'}</div>
                     <div class="t-info">
                         <span><i class="fas fa-list-ol"></i> ${t.qs || '20'} Qs</span>
                         <span><i class="far fa-clock"></i> ${t.time || '15'} Mins</span>
