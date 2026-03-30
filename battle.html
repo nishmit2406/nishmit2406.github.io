@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>1v1 Battle Arena - DSSSB PYQ</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@400;600;800&display=swap');
+
+    :root {
+        --bg-dark: #0f172a; --bg-card: #1e293b;
+        --player1: #3b82f6; --player1-glow: rgba(59, 130, 246, 0.5);
+        --player2: #ef4444; --player2-glow: rgba(239, 68, 68, 0.5);
+        --text-main: #f8fafc; --text-muted: #94a3b8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent;}
+    body { background: var(--bg-dark); color: var(--text-main); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* --- SCREENS --- */
+    .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; inset: 0; background: var(--bg-dark); z-index: 10;}
+    .screen.active { display: flex; animation: fadeIn 0.4s ease forwards; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    /* --- LOBBY SCREEN --- */
+    .lobby { justify-content: center; align-items: center; text-align: center; padding: 20px; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); height: 100%;}
+    .arena-title { font-family: 'Orbitron', sans-serif; font-size: 36px; font-weight: 900; background: linear-gradient(to right, var(--player1), var(--player2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 4px 10px rgba(255,255,255,0.1)); margin-bottom: 10px;}
+    .play-btn { background: linear-gradient(135deg, var(--player1), #2563eb); color: white; border: none; padding: 18px 40px; font-size: 20px; font-family: 'Orbitron', sans-serif; font-weight: 900; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px var(--player1-glow); transition: 0.2s; margin-top: 40px; text-transform: uppercase; letter-spacing: 2px;}
+    .play-btn:active { transform: scale(0.9); }
+    .play-btn:disabled { background: #334155; box-shadow: none; cursor: not-allowed; }
+
+    /* --- SEARCHING SCREEN --- */
+    .searching { justify-content: center; align-items: center; height: 100%; display: flex; flex-direction: column;}
+    .radar { width: 150px; height: 150px; border-radius: 50%; background: rgba(59, 130, 246, 0.1); border: 2px solid var(--player1); position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 50px var(--player1-glow);}
+    .radar::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--player1); animation: pulseRadar 1.5s infinite; }
+    @keyframes pulseRadar { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+
+    .match-found { display: none; text-align: center; animation: fadeIn 0.3s forwards; }
+    .match-found h2 { color: var(--success); font-family: 'Orbitron', sans-serif; font-size: 28px; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); margin-bottom: 10px;}
+    .op-display { font-size: 20px; font-weight: bold; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);}
+
+    /* --- BATTLE ARENA --- */
+    .vs-header { display: flex; height: 80px; width: 100%; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 20; position: relative;}
+    
+    .player-side { flex: 1; display: flex; align-items: center; padding: 0 15px; position: relative; overflow: hidden;}
+    .p1-side { background: linear-gradient(90deg, #1e3a8a, #3b82f6); clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); justify-content: flex-start;}
+    .p2-side { background: linear-gradient(270deg, #7f1d1d, #ef4444); clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); justify-content: flex-end; margin-left: -15%;}
+    
+    .avatar { width: 45px; height: 45px; border-radius: 50%; border: 3px solid white; background: var(--bg-dark); display: grid; place-items: center; font-weight: 800; font-size: 18px; z-index: 2; overflow: hidden;}
+    .p-info { display: flex; flex-direction: column; z-index: 2;}
+    .p1-side .p-info { margin-left: 10px; }
+    .p2-side .p-info { margin-right: 10px; text-align: right;}
+    .p-name { font-weight: 800; font-size: 14px; text-transform: uppercase; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis;}
+    .p-score { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5); transition: 0.3s;}
+
+    .vs-badge { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #fbbf24; border-radius: 50%; display: grid; place-items: center; font-family: 'Orbitron', sans-serif; font-weight: 900; color: black; z-index: 30; border: 3px solid var(--bg-dark); box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);}
+
+    /* Timer Bar */
+    .timer-container { width: 100%; height: 8px; background: #334155; position: relative;}
+    .timer-bar { height: 100%; width: 100%; background: #fbbf24; transition: width 1s linear; box-shadow: 0 0 10px #fbbf24;}
+    
+    /* Question Area */
+    .arena-body { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto;}
+    .q-number { font-size: 12px; font-weight: 800; color: #fbbf24; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; text-align: center;}
+    .q-text { font-size: 18px; font-weight: 600; text-align: center; margin-bottom: 30px; line-height: 1.4; padding: 0 10px;}
+    
+    /* CSS FOR IMAGES */
+    .q-text img, .opt-btn img { max-width: 100%; height: auto; border-radius: 8px; margin-top: 5px; }
+
+    .options-grid { display: flex; flex-direction: column; gap: 15px; }
+    .opt-btn { background: var(--bg-card); border: 2px solid #334155; padding: 16px 20px; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; text-align: left; display: flex; align-items: center;}
+    
+    .opt-btn:active { transform: scale(0.98); }
+    .opt-btn.selected { border-color: var(--player1); background: rgba(59, 130, 246, 0.2); }
+    .opt-btn.correct { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: #34d399; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);}
+    .opt-btn.wrong { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #f87171;}
+    .opt-btn.disabled { pointer-events: none; opacity: 0.7;}
+
+    /* Opponent Action Indicator */
+    .opponent-action { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.9); padding: 8px 20px; border-radius: 20px; font-size: 12px; font-weight: 800; display: none; animation: popUp 0.3s forwards; box-shadow: 0 5px 15px var(--player2-glow); z-index: 100;}
+    @keyframes popUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+    /* --- RESULT SCREEN --- */
+    .result { justify-content: center; align-items: center; text-align: center; background: radial-gradient(circle, #1e293b, #0f172a); height: 100%; display: flex; flex-direction: column;}
+    .res-status { font-family: 'Orbitron', sans-serif; font-size: 40px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase;}
+    .win-text { color: #fbbf24; text-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+    .lose-text { color: #ef4444; text-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+    .draw-text { color: #94a3b8; }
+    
+    .final-scores { display: flex; gap: 30px; margin-bottom: 40px;}
+    .f-score-box { background: var(--bg-card); padding: 20px 30px; border-radius: 20px; border: 2px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+    .f-score-box.winner { border-color: #fbbf24; box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);}
+    .f-score-val { font-family: 'Orbitron', sans-serif; font-size: 32px; font-weight: 900;}
+
+    .home-btn { background: transparent; border: 2px solid var(--text-muted); color: var(--text-muted); padding: 12px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none;}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="s-lobby">
+    <div class="lobby">
+        <div style="font-size: 60px; margin-bottom: 10px;">⚔️</div>
+        <div class="arena-title">BATTLE ARENA</div>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 30px;">Challenge real opponents or practice against AI bots. Faster answers = More points!</p>
+        
+        <div style="background: var(--bg-card); padding: 15px 30px; border-radius: 15px; border: 1px solid #334155; display: inline-block;">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Your Rating</div>
+            <div style="font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 900; color: #fbbf24;">1250 <i class="fas fa-trophy" style="font-size:18px;"></i></div>
+        </div>
+
+        <button class="play-btn" id="btnPlay" onclick="startMatchmaking()"><i class="fas fa-play"></i> Find Match</button>
+        <div style="margin-top: 30px;">
+            <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: bold;">Exit Arena</a>
+        </div>
+    </div>
+</div>
+
+<div class="screen" id="s-search">
+    <div class="searching">
+        <div id="searchUI">
+            <div class="radar">
+                <i class="fas fa-crosshairs" style="font-size: 40px; color: var(--player1);"></i>
+            </div>
+            <h2 style="margin-top: 40px; font-family: 'Orbitron', sans-serif; letter-spacing: 1px;">MATCHMAKING...</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">Looking for a worthy opponent <span id="waitSec">10</span>s</p>
+        </div>
+        
+        <div id="foundUI" class="match-found">
+            <h2>MATCH FOUND!</h2>
+            <div class="op-display">Opponent: <span id="foundName" style="color:#fbbf24;">Player</span></div>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Starting battle...</p>
+        </div>
+    </div>
+</div>
+
+<div class="screen" id="s-arena">
+    <div class="vs-header">
+        <div class="player-side p1-side">
+            <div class="avatar" id="myAvatar" style="color:var(--player1);">You</div>
+            <div class="p-info">
+                <div class="p-name" id="myNameDisp">You</div>
+                <div class="p-score" id="myScore">0</div>
+            </div>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="player-side p2-side">
+            <div class="p-info">
+                <div class="p-name" id="opNameDisp">Opponent</div>
+                <div class="p-score" id="opScore">0</div>
+            </div>
+            <div class="avatar" id="opAvatar" style="color:var(--player2);">👤</div>
+        </div>
+    </div>
+    
+    <div class="timer-container"><div class="timer-bar" id="timerBar"></div></div>
+
+    <div class="arena-body">
+        <div class="q-number" id="qNum">Question 1 / 10</div>
+        <div class="q-text" id="qText">Loading question...</div>
+        
+        <div class="options-grid" id="optionsBox"></div>
+    </div>
+
+    <div class="opponent-action" id="opAction">Opponent answered!</div>
+</div>
+
+<div class="screen" id="s-result">
+    <div class="result">
+        <div id="resIcon" style="font-size: 80px; margin-bottom: 20px;">🏆</div>
+        <div class="res-status win-text" id="resStatus">VICTORY!</div>
+        
+        <div class="final-scores">
+            <div class="f-score-box" id="myFinalBox">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:bold; margin-bottom:5px;">YOU</div>
+                <div class="f-score-val" style="color:var(--player1);" id="myFinalScore">0</div>
+            </div>
+            <div class="f-score-box" id="opFinalBox">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:bold; margin-bottom:5px;" id="resOpName">OPPONENT</div>
+                <div class="f-score-val" style="color:var(--player2);" id="opFinalScore">0</div>
+            </div>
+        </div>
+
+        <button class="play-btn" style="margin-top:0; padding:15px 30px; font-size:16px;" onclick="location.reload()">Play Again</button>
+        <div style="margin-top: 30px;">
+            <a href="index.html" class="home-btn">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* =========================
+       FIREBASE INITIALIZATION
+       ========================= */
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDGolcXv0efZxRdOvBthfeT72mkNLLbAwI", 
+        authDomain: "dsssbexamportal.firebaseapp.com", 
+        databaseURL: "https://dsssbexamportal-default-rtdb.asia-southeast1.firebasedatabase.app", 
+        projectId: "dsssbexamportal", 
+        storageBucket: "dsssbexamportal.firebasestorage.app", 
+        messagingSenderId: "853373171134", 
+        appId: "1:853373171134:web:77b967374e6f34311af5ef" 
+    };
+
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    const db = firebase.database();
+    
+    // Arena Refs
+    const waitRef = db.ref('dsssb_arena/waiting');
+    const matchRef = db.ref('dsssb_arena/matches');
+
+    // Player Data
+    let myId = localStorage.getItem('dsssb_user_id') || 'guest_' + Math.floor(Math.random() * 10000);
+    let myName = localStorage.getItem('dsssb_user_name') || 'Student';
+    let myAvatar = myName.charAt(0).toUpperCase();
+    
+    // Match State
+    let isMultiplayer = false;
+    let matchId = null;
+    let playerRole = null; // 'p1' or 'p2'
+    let opName = "";
+    
+    // Battle Variables
+    let questions = [];
+    let currentQ = 0;
+    let myScore = 0;
+    let opScore = 0;
+    let timerInt;
+    let matchListenRef = null;
+    let timeLeft = 30; // UPDATED to 30
+    const maxTime = 30; // UPDATED to 30
+    let hasAnswered = false;
+    let botDelayTimeout;
+
+    // Realistic Bot Names list
+    const botNames = ["Aman_07", "Priya_Delhi", "Rahul_Kumar", "Neha99", "Vikas_Jat", "Anjali_R", "Rohit_Sharma", "Sneha_D", "Sachin_M", "Pooja_Singh"];
+
+    /* =========================
+       QUESTION PREPARATION (SMART BILINGUAL + HTML TAGS)
+       ========================= */
+    async function prepareQuestions() {
+        try {
+            // Firebase se saare questions uthao
+            const snap = await db.ref('dsssb_questions_db').once('value');
+            const data = snap.val();
+            let pool = [];
+
+            if (data) {
+                // Saare test ke questions mix karo
+                for (let testId in data) {
+                    if (Array.isArray(data[testId])) {
+                        pool = pool.concat(data[testId]);
+                    }
+                }
+            }
+
+            if (pool.length > 0) {
+                // Shuffle karke top 10 questions nikaalo
+                pool = pool.sort(() => Math.random() - 0.5).slice(0, 10);
+                
+                return pool.map(q => {
+                    let sectionName = (q.section || "").toLowerCase();
+                    let isEnglish = sectionName.includes('english');
+                    let isHindi = sectionName.includes('hindi');
+                    
+                    let finalQuestionText = "";
+                    let optionsArray = [];
+
+                    let opEn = (q.op_en && Array.isArray(q.op_en)) ? q.op_en : [];
+                    let opHi = (q.op_hi && Array.isArray(q.op_hi)) ? q.op_hi : [];
+
+                    if (isEnglish) {
+                        // SIRF ENGLISH DIKHAO
+                        finalQuestionText = q.q_en || q.q_hi || "Question missing?";
+                        for(let i=0; i<4; i++) optionsArray.push(opEn[i] || opHi[i] || `Option ${i+1}`);
+                    } 
+                    else if (isHindi) {
+                        // SIRF HINDI DIKHAO
+                        finalQuestionText = q.q_hi || q.q_en || "Question missing?";
+                        for(let i=0; i<4; i++) optionsArray.push(opHi[i] || opEn[i] || `Option ${i+1}`);
+                    } 
+                    else {
+                        // DONO BILINGUAL DIKHAO (Maths, GK, Reasoning etc.)
+                        if (q.q_en && q.q_hi && q.q_en !== q.q_hi) {
+                            finalQuestionText = `
+                                <div style="margin-bottom:12px; font-size:16px;">${q.q_en}</div>
+                                <hr style="border:0; border-top:1px dashed #475569; margin:12px 0;">
+                                <div style="color:#cbd5e1; font-size:15px;">${q.q_hi}</div>
+                            `;
+                        } else {
+                            finalQuestionText = q.q_en || q.q_hi || "Question missing?";
+                        }
+
+                        for(let i = 0; i < 4; i++) {
+                            let enText = opEn[i] || "";
+                            let hiText = opHi[i] || "";
+                            let combinedOpt = "";
+
+                            // Agar English aur Hindi dono hain aur alag hain
+                            if(enText && hiText && enText !== hiText) {
+                                combinedOpt = `
+                                    <div>${enText}</div>
+                                    <div style="font-size:13px; color:#cbd5e1; margin-top:4px;">${hiText}</div>
+                                `;
+                            } else {
+                                // Agar sirf ek hi bhasha hai
+                                combinedOpt = enText || hiText || `Option ${i+1}`;
+                            }
+                            optionsArray.push(combinedOpt);
+                        }
+                    }
+                    
+                    return { 
+                        q: finalQuestionText, 
+                        opt: optionsArray, 
+                        ans: parseInt(q.ans) - 1 
+                    };
+                });
+            }
+        } catch(e) {
+            console.log("Firebase Fetch Error: ", e);
+        }
+
+        // Fallback (Agar Internet slow ho)
+        return [
+            { 
+                q: "Capital of India? <hr style='border-top:1px dashed #475569; margin:10px 0;'> भारत की राजधानी?", 
+                opt: ["Mumbai <br><small>मुंबई</small>", "Delhi <br><small>दिल्ली</small>", "Kolkata <br><small>कोलकाता</small>", "Chennai <br><small>चेन्नई</small>"], 
+                ans: 1 
+            }
+        ];
+    }
+
+    /* =========================
+       MATCHMAKING (HYBRID LOGIC)
+       ========================= */
+    async function startMatchmaking() {
+        document.getElementById('btnPlay').disabled = true;
+        document.getElementById('btnPlay').innerText = "Loading Qs...";
+        
+        // Wait to grab 10 random questions from Firebase first
+        questions = await prepareQuestions();
+        
+        document.getElementById('btnPlay').innerText = "Connecting...";
+        
+        document.getElementById('s-lobby').classList.remove('active');
+        document.getElementById('s-search').classList.add('active');
+        document.getElementById('searchUI').style.display = 'block';
+        document.getElementById('foundUI').style.display = 'none';
+        
+        document.getElementById('myNameDisp').innerText = myName;
+        document.getElementById('myAvatar').innerText = myAvatar;
+
+        // Check if anyone is waiting
+        waitRef.once('value', snap => {
+            let waitingPlayers = snap.val();
+            let found = false;
+
+            if (waitingPlayers) {
+                for (let key in waitingPlayers) {
+                    if (key !== myId) {
+                        // Found a real player! Join them.
+                        found = true;
+                        isMultiplayer = true;
+                        playerRole = 'p2';
+                        opName = waitingPlayers[key].name;
+                        matchId = key + '_' + myId;
+                        
+                        // Remove them from waiting list
+                        waitRef.child(key).remove();
+                        
+                        // Create Match Node & push questions
+                        matchRef.child(matchId).set({
+                            p1: key, p1_name: waitingPlayers[key].name, p1_score: 0,
+                            p2: myId, p2_name: myName, p2_score: 0,
+                            questions: questions,
+                            status: 'playing'
+                        });
+                        
+                        showMatchFound(opName);
+                        break;
+                    }
+                }
+            }
+
+            if (!found) {
+                // Nobody waiting. Add self to waiting list.
+                waitRef.child(myId).set({ name: myName, time: Date.now() });
+                playerRole = 'p1';
+                
+                // Countdown for 10 seconds to find a real player
+                let waitTicks = 10;
+                let waitInt = setInterval(() => {
+                    waitTicks--;
+                    document.getElementById('waitSec').innerText = waitTicks;
+                    if(waitTicks <= 0) {
+                        clearInterval(waitInt);
+                        // TIMEOUT! Start Bot Match
+                        matchRef.orderByChild('p1').equalTo(myId).off(); // Stop listening
+                        waitRef.child(myId).remove(); // Remove self from waiting
+                        startBotMatch();
+                    }
+                }, 1000);
+
+                // Listen for someone joining me
+                matchRef.orderByChild('p1').equalTo(myId).on('child_added', matchSnap => {
+                    clearInterval(waitInt); // Stop countdown
+                    matchRef.orderByChild('p1').equalTo(myId).off(); // Stop listening
+                    
+                    isMultiplayer = true;
+                    matchId = matchSnap.key;
+                    let data = matchSnap.val();
+                    opName = data.p2_name;
+                    questions = data.questions || questions; // Take questions from P2
+                    
+                    showMatchFound(opName);
+                });
+            }
+        }).catch(e => {
+            // If offline or error, fallback to Bot Match immediately
+            startBotMatch();
+        });
+    }
+
+    function startBotMatch() {
+        isMultiplayer = false;
+        opName = botNames[Math.floor(Math.random() * botNames.length)];
+        showMatchFound(opName);
+    }
+
+    function showMatchFound(opponentName) {
+        document.getElementById('searchUI').style.display = 'none';
+        document.getElementById('foundUI').style.display = 'block';
+        document.getElementById('foundName').innerText = opponentName;
+        
+        document.getElementById('opNameDisp').innerText = opponentName;
+        document.getElementById('opAvatar').innerText = isMultiplayer ? opponentName.charAt(0).toUpperCase() : "🤖";
+        
+        setTimeout(() => {
+            document.getElementById('s-search').classList.remove('active');
+            document.getElementById('s-arena').classList.add('active');
+            
+            if (isMultiplayer) setupRealtimeListeners();
+            loadQuestion();
+        }, 2000);
+    }
+
+    /* =========================
+       REAL-TIME MULTIPLAYER SYNC
+       ========================= */
+    function setupRealtimeListeners() {
+        matchListenRef = matchRef.child(matchId);
+        
+        matchListenRef.on('value', snap => {
+            let data = snap.val();
+            if(!data) return;
+
+            // Update opponent score
+            if (playerRole === 'p1' && data.p2_score > opScore) {
+                opScore = data.p2_score;
+                animateScore('opScore', opScore);
+                showOpponentAction();
+            } else if (playerRole === 'p2' && data.p1_score > opScore) {
+                opScore = data.p1_score;
+                animateScore('opScore', opScore);
+                showOpponentAction();
+            }
+        });
+        
+        // Clean up match if disconnected
+        matchListenRef.onDisconnect().remove();
+    }
+
+    /* =========================
+       GAMEPLAY LOOP
+       ========================= */
+    function loadQuestion() {
+        if (currentQ >= questions.length) {
+            endGame();
+            return;
+        }
+
+        hasAnswered = false;
+        timeLeft = maxTime;
+        document.getElementById('timerBar').style.width = '100%';
+        document.getElementById('opAction').style.display = 'none';
+
+        const qData = questions[currentQ];
+        document.getElementById('qNum').innerText = `Question ${currentQ + 1} / ${questions.length}`;
+        document.getElementById('qText').innerHTML = qData.q;
+
+        let optHtml = '';
+        qData.opt.forEach((o, i) => {
+            optHtml += `<div class="opt-btn" onclick="checkAnswer(this, ${i}, ${qData.ans})"><b>${String.fromCharCode(65+i)}</b>. &nbsp; ${o}</div>`;
+        });
+        document.getElementById('optionsBox').innerHTML = optHtml;
+
+        startTimer();
+        if (!isMultiplayer) simulateBot();
+    }
+
+    function startTimer() {
+        clearInterval(timerInt);
+        timerInt = setInterval(() => {
+            timeLeft--;
+            let pct = (timeLeft / maxTime) * 100;
+            document.getElementById('timerBar').style.width = pct + '%';
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInt);
+                if (!hasAnswered) handleTimeOut();
+            }
+        }, 1000);
+    }
+
+    function checkAnswer(btn, selectedIdx, correctIdx) {
+        if (hasAnswered) return;
+        hasAnswered = true;
+        clearInterval(timerInt);
+
+        // Disable buttons
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(b => b.classList.add('disabled'));
+
+        btn.classList.add('selected');
+
+        // Score logic: 10 base points + time bonus
+        if (selectedIdx === correctIdx) {
+            btn.classList.add('correct');
+            let points = 10 + (timeLeft * 2);
+            myScore += points;
+            animateScore('myScore', myScore);
+            
+            // Sync to Firebase if Real
+            if (isMultiplayer) {
+                let scoreUpdate = {};
+                if(playerRole === 'p1') scoreUpdate['p1_score'] = myScore;
+                else scoreUpdate['p2_score'] = myScore;
+                matchListenRef.update(scoreUpdate);
+            }
+        } else {
+            btn.classList.add('wrong');
+            btns[correctIdx].classList.add('correct'); 
+        }
+
+        // To prevent desync, we just wait a fixed time then move next
+        setTimeout(() => {
+            currentQ++;
+            loadQuestion();
+        }, 2000);
+    }
+
+    function handleTimeOut() {
+        hasAnswered = true;
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(b => b.classList.add('disabled'));
+        btns[questions[currentQ].ans].classList.add('correct');
+        
+        setTimeout(() => { currentQ++; loadQuestion(); }, 2000);
+    }
+
+    /* =========================
+       BOT LOGIC & UI EFFECTS
+       ========================= */
+    function simulateBot() {
+        clearTimeout(botDelayTimeout);
+        // UPDATED: Bot random answer time 3 to 10 seconds
+        let botDelay = Math.floor(Math.random() * 7000) + 3000;
+        
+        botDelayTimeout = setTimeout(() => {
+            if(timeLeft <= 0 || hasAnswered) return;
+            
+            // Bot accuracy ~ 70%
+            let isBotCorrect = Math.random() > 0.3;
+            if (isBotCorrect) {
+                let botPoints = 10 + (timeLeft * 2); 
+                opScore += botPoints;
+                animateScore('opScore', opScore);
+                showOpponentAction();
+            }
+        }, botDelay);
+    }
+
+    function showOpponentAction() {
+        const opToast = document.getElementById('opAction');
+        opToast.innerText = `${opName} answered!`;
+        opToast.style.display = 'block';
+        setTimeout(()=> { opToast.style.display = 'none'; }, 1500);
+    }
+
+    function animateScore(id, newScore) {
+        const el = document.getElementById(id);
+        el.innerText = newScore;
+        el.style.transform = "scale(1.5)";
+        el.style.color = "white";
+        setTimeout(() => {
+            el.style.transform = "scale(1)";
+            el.style.color = "";
+        }, 300);
+    }
+
+    /* =========================
+       END GAME
+       ========================= */
+    function endGame() {
+        if (isMultiplayer && matchListenRef) {
+            matchListenRef.off();
+            matchListenRef.remove(); // Clean up match
+        }
+
+        document.getElementById('s-arena').classList.remove('active');
+        document.getElementById('s-result').classList.add('active');
+
+        document.getElementById('myFinalScore').innerText = myScore;
+        document.getElementById('opFinalScore').innerText = opScore;
+        document.getElementById('resOpName').innerText = opName.toUpperCase();
+
+        const resStatus = document.getElementById('resStatus');
+        const resIcon = document.getElementById('resIcon');
+
+        if (myScore > opScore) {
+            resStatus.innerText = "VICTORY!";
+            resStatus.className = "res-status win-text";
+            resIcon.innerText = "🏆";
+            document.getElementById('myFinalBox').classList.add('winner');
+            if(window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+        } else if (opScore > myScore) {
+            resStatus.innerText = "DEFEAT";
+            resStatus.className = "res-status lose-text";
+            resIcon.innerText = "💀";
+            document.getElementById('opFinalBox').classList.add('winner');
+        } else {
+            resStatus.innerText = "DRAW!";
+            resStatus.className = "res-status draw-text";
+            resIcon.innerText = "🤝";
+        }
+    }
+    
+    // Clean up if user closes tab while waiting
+    window.addEventListener("beforeunload", function (e) {
+        if(waitRef && myId) waitRef.child(myId).remove();
+        if(isMultiplayer && matchListenRef) matchListenRef.remove();
+    });
+
+    /* ==========================================
+       🔥 LIVE TRACKER CODE START 🔥
+       ========================================== */
+    // User details nikalo
+    let userId = localStorage.getItem('dsssb_user_id');
+    let userName = localStorage.getItem('dsssb_user_name') || 'Student';
+    if(!userId) {
+        userId = 'user_' + Math.floor(Math.random() * 1000000);
+        localStorage.setItem('dsssb_user_id', userId);
+    }
+
+    let currentPage = 'In Battle Arena ⚔️';
+
+    // 1. Total & Weekly Users ke liye last active time save karo
+    db.ref('dsssb_analytics/users/' + userId).update({
+        name: userName,
+        last_active: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    // 2. Live Users Track
+    const connectedRef = db.ref('.info/connected');
+    const presenceRef = db.ref('dsssb_analytics/presence/' + userId);
+
+    connectedRef.on('value', (snap) => {
+        if (snap.val() === true) {
+            presenceRef.onDisconnect().remove(); 
+            presenceRef.set({
+                name: userName,
+                activity: currentPage,
+                time: firebase.database.ServerValue.TIMESTAMP
+            });
+        }
+    });
+</script>   
+</body>
+</html>
