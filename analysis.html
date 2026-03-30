@@ -1,0 +1,345 @@
+
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+<title>Smart Post-Exam Analysis</title> 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> 
+
+<script>
+window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style> 
+:root { 
+    --primary: #4f46e5; --primary-light: #e0e7ff; --primary-dark: #3730a3; 
+    --success: #10b981; --warning: #f59e0b; --danger: #ef4444; 
+    --bg-body: #f4f6f8; --bg-card: #ffffff; --text-main: #1f2937; --text-muted: #6b7280; 
+    --border: #e5e7eb; 
+} 
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; } 
+body { background: var(--bg-body); color: var(--text-main); padding: 20px; padding-bottom: 80px;} 
+
+.header-banner { background: linear-gradient(135deg, #4f46e5, #8b5cf6); padding: 25px; border-radius: 20px; color: white; text-align: center; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); margin-bottom: 25px; position: relative;} 
+.header-banner h1 { font-size: 24px; font-weight: 900; margin-bottom: 5px; } 
+.header-banner p { font-size: 14px; opacity: 0.9; font-weight: 600;} 
+
+.lang-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px);}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; } 
+.card { background: var(--bg-card); padding: 20px; border-radius: 16px; box-shadow: 0 6px 15px rgba(0,0,0,0.04); border: 1px solid var(--border); } 
+.card-title { font-weight: 800; font-size: 16px; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px;} 
+
+.stat-box { text-align: center; padding: 15px; border-radius: 12px; background: var(--bg-body); border: 1px solid var(--border); } 
+.stat-val { font-size: 24px; font-weight: 900; color: var(--primary); margin-bottom: 5px;} 
+.stat-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;} 
+
+/* AI Engine Styles */ 
+.ai-engine-box { background: linear-gradient(to right, #1e293b, #0f172a); color: white; border: 1px solid #334155; } 
+.topic-pill { padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;} 
+.topic-weak { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); } 
+.topic-strong { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); } 
+.progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 5px; margin-top: 6px; overflow: hidden;} 
+.progress-fill { height: 100%; border-radius: 5px; } 
+
+.btn-action { display: block; width: 100%; padding: 15px; background: var(--primary); color: white; text-align: center; font-weight: 800; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); margin-top: 15px; transition: 0.2s;} 
+.btn-action:active { transform: scale(0.98); }
+
+/* --- NEW: Comparison & Percentage Bars --- */
+.compare-row { margin-bottom: 12px; }
+.compare-lbl { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); }
+.compare-track { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--border); }
+.compare-fill-you { background: var(--primary); border-right: 2px solid white; }
+.compare-fill-avg { background: var(--warning); }
+
+.q-box { border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 20px; }
+.q-box:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.opt-pct-row { position: relative; background: var(--bg-body); border-radius: 8px; margin-bottom: 8px; overflow: hidden; border: 1px solid var(--border); display: flex; align-items: center; }
+.opt-pct-fill { position: absolute; left: 0; top: 0; height: 100%; background: #e2e8f0; z-index: 1; transition: width 1s ease-out; }
+.opt-pct-fill.correct-fill { background: rgba(16, 185, 129, 0.25); }
+.opt-pct-content { position: relative; z-index: 2; display: flex; justify-content: space-between; width: 100%; padding: 10px 15px; font-size: 13px; font-weight: 600; color: var(--text-main); }
+.user-badge { background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 8px; font-weight: bold; }
+</style> 
+</head> 
+<body> 
+    
+<div class="header-banner"> 
+    <button class="lang-btn" id="langBtn" onclick="toggleLanguage()">A/अ</button>
+    <h1>📊 Deep Exam Analysis</h1> 
+    <p>AI-Powered Performance Insights</p> 
+</div> 
+
+<div class="grid-2"> 
+    <div class="stat-box"> 
+        <div class="stat-val" id="accVal">0%</div> 
+        <div class="stat-lbl">Accuracy</div> 
+    </div> 
+    <div class="stat-box"> 
+        <div class="stat-val" id="timeVal">0s</div> 
+        <div class="stat-lbl">Avg Time/Q</div> 
+    </div> 
+</div> 
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-title"><i class="fas fa-balance-scale" style="color: var(--primary);"></i> You vs Average Student</div>
+    
+    <div class="compare-row">
+        <div class="compare-lbl">
+            <span style="color: var(--primary);">Your Acc: <span id="compMyAcc">0</span>%</span>
+            <span style="color: var(--warning);">Avg Acc: 58%</span>
+        </div>
+        <div class="compare-track">
+            <div class="compare-fill-you" id="barMyAcc" style="width: 0%;"></div>
+            <div class="compare-fill-avg" id="barAvgAcc" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <div class="compare-row" style="margin-bottom: 0;">
+        <div class="compare-lbl">
+            <span style="color: var(--primary);">Your Time: <span id="compMyTime">0</span>s</span>
+            <span style="color: var(--warning);">Avg Time: 45s</span>
+        </div>
+        <div class="compare-track">
+            <div class="compare-fill-you" id="barMyTime" style="width: 0%;"></div>
+            <div class="compare-fill-avg" id="barAvgTime" style="width: 0%;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card ai-engine-box"> 
+    <div class="card-title" style="color:#fff;"><i class="fas fa-brain" style="color:#a855f7;"></i> AI Weak Topic Engine</div> 
+    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 15px; line-height:1.5;">Based on your recent attempt, our AI has analyzed your concept mastery. Focus on the red topics to improve your score.</p> 
+    <div id="aiTopicsList"> 
+        <div style="text-align:center; padding: 20px; color:#64748b;">Analyzing your data...</div> 
+    </div> 
+</div> 
+
+<div class="grid-2" style="margin-top: 20px; margin-bottom: 20px;">
+    <div class="card" style="margin-bottom: 0;"> 
+        <div class="card-title"><i class="fas fa-stopwatch" style="color: var(--warning);"></i> Time Stats</div> 
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;"> 
+            <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Fastest:</span> 
+            <span style="font-size:12px; font-weight:800; color:var(--success);" id="fastTime">--</span> 
+        </div> 
+        <div style="display:flex; justify-content:space-between;"> 
+            <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Slowest:</span> 
+            <span style="font-size:12px; font-weight:800; color:var(--danger);" id="slowTime">--</span> 
+        </div> 
+    </div> 
+    <div class="card" style="margin-bottom: 0;"> 
+        <div style="height: 100px; position:relative; width: 100%; display: flex; justify-content: center;"> 
+            <canvas id="accuracyChart"></canvas> 
+        </div> 
+    </div> 
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-title"><i class="fas fa-poll" style="color: var(--success);"></i> Question Selection Insights</div>
+    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px; line-height:1.5;">Check what percentage of students selected which option.</p>
+    
+    <div id="qBreakdownList">
+        <div style="text-align:center; padding: 20px; color:#64748b;">Loading questions...</div> 
+    </div>
+</div>
+
+<a href="index.html" class="btn-action"><i class="fas fa-home"></i> Back to Dashboard</a> 
+<a href="replay.html" class="btn-action" style="background: var(--bg-card); color: var(--primary); border: 2px solid var(--primary); box-shadow:none;"><i class="fas fa-play-circle"></i> View Question Replay Mode</a> 
+
+<script> 
+function getSafeData(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
+
+// Language State
+let isHindi = false;
+
+window.onload = function() { 
+    // 1. Load Analysis Data
+    let testDataRaw = getSafeData('dsssb_analysis_data');
+    if (!testDataRaw) {
+        document.getElementById('aiTopicsList').innerHTML = '<div style="color:#ef4444; text-align:center; padding:10px; font-weight:bold;">No recent test data found. Attempt a mock test first!</div>';
+        document.getElementById('qBreakdownList').innerHTML = '';
+        return;
+    }
+    
+    let realData = JSON.parse(testDataRaw);
+    loadAnalysisData(realData); 
+    
+    // 2. Load Questions Breakdown
+    renderQuestionBreakdown();
+}; 
+
+function toggleLanguage() {
+    isHindi = !isHindi;
+    document.getElementById('langBtn').innerText = isHindi ? 'EN' : 'A/अ';
+    renderQuestionBreakdown();
+}
+
+function loadAnalysisData(data) { 
+    const totalAttempted = data.correct + data.wrong; 
+    const accuracy = totalAttempted > 0 ? Math.round((data.correct / totalAttempted) * 100) : 0; 
+    
+    document.getElementById('accVal').innerText = accuracy + '%'; 
+    document.getElementById('timeVal').innerText = data.avgTime + 's'; 
+    
+    document.getElementById('fastTime').innerText = (data.fastestTime === 9999 ? 0 : data.fastestTime) + 's'; 
+    document.getElementById('slowTime').innerText = data.slowestTime + 's'; 
+
+    // --- You vs Average Calculation ---
+    document.getElementById('compMyAcc').innerText = accuracy;
+    document.getElementById('compMyTime').innerText = data.avgTime;
+    
+    // Acc Bars (Base total 100%)
+    document.getElementById('barMyAcc').style.width = accuracy + '%';
+    document.getElementById('barAvgAcc').style.width = '58%'; // Fixed avg for example
+
+    // Time Bars (Inverse: Less time is smaller bar)
+    let maxTime = Math.max(data.avgTime, 45) + 10;
+    document.getElementById('barMyTime').style.width = ((data.avgTime / maxTime) * 100) + '%';
+    document.getElementById('barAvgTime').style.width = ((45 / maxTime) * 100) + '%';
+
+
+    // --- AI Engine Processing ---
+    const topicsBox = document.getElementById('aiTopicsList'); 
+    let topicsHtml = ''; 
+    let weakFound = false; 
+
+    let topicsArray = Object.keys(data.topicPerformance || {});
+    if(topicsArray.length === 0) {
+         topicsBox.innerHTML = '<div style="color:#64748b; text-align:center; padding:10px; font-weight:bold;">No topic tags found in this mock.</div>';
+    } else {
+        topicsArray.forEach(topic => { 
+            let stats = data.topicPerformance[topic]; 
+            let tAtt = stats.c + stats.w; 
+            if (tAtt === 0) return; 
+
+            let tAcc = (stats.c / tAtt) * 100; 
+
+            if (tAcc <= 50) { 
+                weakFound = true; 
+                topicsHtml += ` 
+                    <div class="topic-pill topic-weak"> 
+                        <div><i class="fas fa-times-circle"></i> ${topic}</div> 
+                        <div>${Math.round(tAcc)}% Acc.</div> 
+                    </div> 
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${tAcc}%; background:#ef4444;"></div></div> 
+                    <div style="margin-bottom:15px;"></div> 
+                `; 
+            } else if (tAcc >= 80) { 
+                topicsHtml += ` 
+                    <div class="topic-pill topic-strong"> 
+                        <div><i class="fas fa-check-circle"></i> ${topic}</div> 
+                        <div>${Math.round(tAcc)}% Acc.</div> 
+                    </div> 
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${tAcc}%; background:#10b981;"></div></div> 
+                    <div style="margin-bottom:15px;"></div> 
+                `; 
+            } 
+        }); 
+        
+        if (!weakFound && topicsHtml !== '') { 
+            topicsHtml = '<div style="color:#10b981; text-align:center; padding:10px; font-weight:bold;">🎉 Excellent! No major weak topics detected!</div>' + topicsHtml; 
+        } else if (topicsHtml === '') {
+            topicsHtml = '<div style="color:#64748b; text-align:center; padding:10px; font-weight:bold;">Attempt more questions to see Topic Analysis.</div>';
+        }
+        topicsBox.innerHTML = topicsHtml; 
+    }
+
+    // Render Chart 
+    const ctx = document.getElementById('accuracyChart').getContext('2d'); 
+    new Chart(ctx, { 
+        type: 'doughnut', 
+        data: { 
+            labels: ['Correct', 'Wrong', 'Skip'], 
+            datasets: [{ 
+                data: [data.correct, data.wrong, data.skipped], 
+                backgroundColor: ['#10b981', '#ef4444', '#f59e0b'], 
+                borderWidth: 0, 
+                cutout: '70%' 
+            }] 
+        }, 
+        options: { 
+            responsive: true, maintainAspectRatio: false, 
+            plugins: { legend: { position: 'right', labels: { boxWidth: 10, color: '#6b7280', font: {family: 'Segoe UI', weight: 'bold'} } } } 
+        } 
+    }); 
+} 
+
+// --- Smart Option Mock Generator ---
+function getMockPercentages(correctIdx, numOpts) {
+    let pcts = new Array(numOpts).fill(0);
+    // Correct answer mostly gets 40% to 75%
+    let correctPct = Math.floor(Math.random() * 35) + 40; 
+    pcts[correctIdx] = correctPct;
+    
+    let remaining = 100 - correctPct;
+    for(let i = 0; i < numOpts; i++) {
+        if(i !== correctIdx) {
+            let p = (i === numOpts - 1) ? remaining : Math.floor(Math.random() * (remaining - 5));
+            pcts[i] = p;
+            remaining -= p;
+        }
+    }
+    return pcts;
+}
+
+function renderQuestionBreakdown() {
+    let qsRaw = getSafeData('dsssb_replay_qs');
+    let stateRaw = getSafeData('dsssb_replay_state');
+    
+    if(!qsRaw || !stateRaw) {
+        document.getElementById('qBreakdownList').innerHTML = '<div style="color:red; font-size:12px;">Question data not found.</div>';
+        return;
+    }
+
+    let questions = JSON.parse(qsRaw);
+    let state = JSON.parse(stateRaw);
+    let html = '';
+
+    questions.forEach((q, i) => {
+        let userAns = state.answers[i];
+        let correctAns = parseInt(q.ans) - 1;
+        
+        let qText = isHindi ? (q.q_hi || q.q_en) : (q.q_en || q.q_hi);
+        let opts = isHindi ? (q.op_hi || q.op_en) : (q.op_en || q.op_hi);
+
+        // Generate static random % based on Question ID so it doesn't change on language toggle
+        Math.seedrandom = i; 
+        let pcts = getMockPercentages(correctAns, opts.length);
+
+        html += `<div class="q-box">
+                    <div style="font-size:14px; font-weight:700; margin-bottom:12px; color:var(--text-main);"><span style="color:var(--primary);">Q${i+1}.</span> ${qText}</div>`;
+        
+        opts.forEach((optText, oIdx) => {
+            let isUser = (userAns === oIdx);
+            let isCorrect = (correctAns === oIdx);
+            let pct = pcts[oIdx];
+            
+            let fillClass = isCorrect ? 'correct-fill' : '';
+            let userBadge = isUser ? '<span class="user-badge">👤 You</span>' : '';
+            let checkIcon = isCorrect ? '<i class="fas fa-check-circle" style="color:#10b981; margin-left:5px;"></i>' : '';
+
+            html += `
+                <div class="opt-pct-row">
+                    <div class="opt-pct-fill ${fillClass}" style="width: ${pct}%;"></div>
+                    <div class="opt-pct-content">
+                        <div style="flex:1;"><b>${String.fromCharCode(65+oIdx)})</b> ${optText} ${userBadge} ${checkIcon}</div>
+                        <div>${pct}%</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+    });
+
+    document.getElementById('qBreakdownList').innerHTML = html;
+    
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([document.getElementById('qBreakdownList')]);
+    }
+}
+</script> 
+</body> 
+</html>
