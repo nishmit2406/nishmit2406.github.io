@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dsssb-pyq-cache-v2';
+const CACHE_NAME = 'pyq-notes-cache-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
