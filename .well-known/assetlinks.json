@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.dsssbsmartnotes.twa",
+    "sha256_cert_fingerprints": [
+      "70:85:F4:74:9A:B1:30:6B:08:8A:BA:86:7D:7E:BD:C0:F9:06:32:AD:FC:3E:D8:6D:96:F3:7E:4D:78:97:20:A6"
+    ]
+  }
+}]
