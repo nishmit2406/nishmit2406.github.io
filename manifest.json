@@ -1,8 +1,7 @@
-
 {
-  "name": "DSSSB PYQ & Mock Portal",
-  "short_name": "DSSSB PYQ",
-  "description": "Premium Mock Tests, Previous Year Questions, and Analysis for DSSSB Exams.",
+  "name": "PYQ Notes",
+  "short_name": "PYQ Notes",
+  "description": "Premium Mock Tests, Previous Year Questions, and Analysis for Competitive Exams.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f6f8",
