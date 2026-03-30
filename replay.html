@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Question Replay Mode - DSSSB PYQ</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script>
+window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+    :root {
+        --primary: #4f46e5; --primary-light: #e0e7ff; --primary-dark: #3730a3;
+        --success: #10b981; --success-light: #d1fae5;
+        --danger: #ef4444; --danger-light: #fee2e2;
+        --warning: #f59e0b; --warning-light: #fef3c7;
+        --bg-body: #f4f6f8; --bg-card: #ffffff; --text-main: #1f2937; --text-muted: #6b7280;
+        --border: #e5e7eb;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-body); color: var(--text-main); display: flex; flex-direction: column; height: 100dvh; overflow: hidden;}
+    
+    .replay-header { background: linear-gradient(90deg, #1e293b, #0f172a); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10;}
+    .back-btn { color: white; text-decoration: none; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px;}
+    .q-counter { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 800; letter-spacing: 1px;}
+    
+    .replay-container { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 90px;}
+    .q-card { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 20px;}
+    
+    .meta-strip { background: var(--bg-body); padding: 12px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
+    .status-badge { padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;}
+    .status-correct { background: var(--success-light); color: #065f46; border: 1px solid #34d399;}
+    .status-wrong { background: var(--danger-light); color: #991b1b; border: 1px solid #f87171;}
+    .status-skipped { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;}
+    
+    .time-badge { font-size: 12px; font-weight: 800; color: var(--text-muted); display: flex; gap: 10px;}
+    .time-val { background: #e0f2fe; color: #1e40af; padding: 3px 8px; border-radius: 6px;}
+    
+    .q-text-box { padding: 20px; font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--text-main); border-bottom: 1px dashed var(--border);}
+    
+    .options-box { padding: 15px 20px; display: flex; flex-direction: column; gap: 12px;}
+    .opt-row { padding: 14px 15px; border-radius: 12px; border: 2px solid var(--border); font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: 0.3s; position: relative;}
+    
+    .opt-row.correct { background: var(--success-light); border-color: var(--success); color: #065f46; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.15);}
+    .opt-row.wrong { background: var(--danger-light); border-color: var(--danger); color: #991b1b;}
+    .opt-row.faded { opacity: 0.6; background: #fafafa;} 
+    
+    .opt-lbl { width: 28px; height: 28px; border-radius: 50%; background: white; border: 2px solid var(--border); display: grid; place-items: center; font-size: 12px; font-weight: 800; flex-shrink: 0;}
+    .opt-row.correct .opt-lbl { background: var(--success); border-color: var(--success); color: white;}
+    .opt-row.wrong .opt-lbl { background: var(--danger); border-color: var(--danger); color: white;}
+    
+    .solution-box { background: #f8fafc; border-top: 1px solid var(--border); padding: 20px;}
+    .sol-title { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;}
+    .sol-text { font-size: 14px; color: #334155; line-height: 1.6; background: white; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; border-left: 4px solid var(--primary);}
+
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid var(--border); display: flex; justify-content: space-between; padding: 15px 20px; padding-bottom: calc(15px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 15px rgba(0,0,0,0.05);}
+    .nav-btn { padding: 12px 25px; border-radius: 10px; font-weight: 800; font-size: 14px; border: none; cursor: pointer; transition: 0.2s;}
+    .btn-prev { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border);}
+    .btn-next { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);}
+    .btn-next:active { transform: scale(0.95); }
+</style>
+</head>
+<body>
+
+<div class="replay-header">
+    <a href="analysis.html" class="back-btn"><i class="fas fa-arrow-left"></i> Analysis</a>
+    <div class="q-counter"><span id="currQ">1</span> / <span id="totalQ">--</span></div>
+</div>
+
+<div class="replay-container" id="replayContainer">
+    <div style="text-align:center; padding: 50px; color: var(--text-muted);">
+        <i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading Replay Data...
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <button class="nav-btn btn-prev" onclick="prevQuestion()"><i class="fas fa-chevron-left"></i> Prev</button>
+    <button class="nav-btn btn-next" onclick="nextQuestion()">Next <i class="fas fa-chevron-right"></i></button>
+</div>
+
+<script>
+    let replayData = [];
+    let currentIndex = 0;
+
+    window.onload = () => {
+        // Fetch Real Data from LocalStorage
+        let qsRaw = localStorage.getItem('dsssb_replay_qs');
+        let stateRaw = localStorage.getItem('dsssb_replay_state');
+        
+        if(qsRaw && stateRaw) {
+            let qs = JSON.parse(qsRaw);
+            let state = JSON.parse(stateRaw);
+            
+            // Format Real Data for Replay Engine
+            replayData = qs.map((q, i) => {
+                return {
+                    ...q,
+                    userAns: state.answers[i] !== null ? state.answers[i] + 1 : null,
+                    timeTaken: state.timePerQ[i] || 0
+                }
+            });
+
+            document.getElementById('totalQ').innerText = replayData.length;
+            renderQuestion(currentIndex);
+        } else {
+            document.getElementById('replayContainer').innerHTML = "<div style='text-align:center; padding:50px; color:red; font-weight:bold;'>No replay data found. Please attempt a mock test first!</div>";
+        }
+    };
+
+    function renderQuestion(index) {
+        if (replayData.length === 0) return;
+        const q = replayData[index];
+        const container = document.getElementById('replayContainer');
+        document.getElementById('currQ').innerText = index + 1;
+
+        const correctIdx = parseInt(q.ans) - 1;
+        const userIdx = q.userAns !== null ? parseInt(q.userAns) - 1 : null;
+        
+        let statusHtml = '';
+        if (userIdx === null) {
+            statusHtml = `<div class="status-badge status-skipped"><i class="fas fa-minus-circle"></i> Skipped</div>`;
+        } else if (userIdx === correctIdx) {
+            statusHtml = `<div class="status-badge status-correct"><i class="fas fa-check-circle"></i> Correct (+1.0)</div>`;
+        } else {
+            statusHtml = `<div class="status-badge status-wrong"><i class="fas fa-times-circle"></i> Wrong (-0.25)</div>`;
+        }
+
+        // Handle bilingual questions and options
+        const qTextStr = q.q_en || q.q_hi;
+        const optsArr = q.op_en || q.op_hi;
+
+        let optionsHtml = '';
+        optsArr.forEach((optText, i) => {
+            let optClass = 'opt-row';
+            let iconHtml = '';
+
+            if (i === correctIdx) {
+                optClass += ' correct';
+                iconHtml = '<i class="fas fa-check" style="position:absolute; right:15px; font-size:18px;"></i>';
+            } else if (i === userIdx && userIdx !== correctIdx) {
+                optClass += ' wrong';
+                iconHtml = '<i class="fas fa-times" style="position:absolute; right:15px; font-size:18px;"></i>';
+            } else {
+                optClass += ' faded';
+            }
+
+            optionsHtml += `
+                <div class="${optClass}">
+                    <div class="opt-lbl">${String.fromCharCode(65 + i)}</div>
+                    <div>${optText}</div>
+                    ${iconHtml}
+                </div>
+            `;
+        });
+
+        const qText = `${qTextStr}<br><span style="color:#64748b; font-size:14px; margin-top:5px; display:block;">${(q.q_hi && q.q_en) ? q.q_hi : ''}</span>`;
+
+        let html = `
+            <div class="q-card" style="animation: tabFade 0.4s ease;">
+                <div class="meta-strip">
+                    ${statusHtml}
+                    <div class="time-badge">
+                        <span style="background:var(--primary-light); color:var(--primary-dark); padding:3px 8px; border-radius:6px;">🏷️ ${q.topic || 'General'}</span>
+                        <span class="time-val"><i class="fas fa-stopwatch"></i> Time: ${q.timeTaken}s</span>
+                    </div>
+                </div>
+                
+                <div class="q-text-box">
+                    <span style="color:var(--primary); font-weight:800; margin-right:5px;">Q${index + 1}.</span> 
+                    ${qText}
+                </div>
+                
+                <div class="options-box">
+                    ${optionsHtml}
+                </div>
+
+                <div class="solution-box">
+                    <div class="sol-title"><i class="fas fa-lightbulb"></i> Detailed Solution</div>
+                    <div class="sol-text">${q.solution || 'No detailed solution provided.'}</div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+        
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise([container]).catch(err => console.log(err));
+        }
+
+        container.scrollTop = 0;
+    }
+
+    function nextQuestion() {
+        if (currentIndex < replayData.length - 1) {
+            currentIndex++;
+            renderQuestion(currentIndex);
+        } else {
+            alert("This is the last question.");
+        }
+    }
+
+    function prevQuestion() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion(currentIndex);
+        }
+    }
+</script>
+
+</body>
+</html>
