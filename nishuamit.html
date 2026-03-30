@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSSSB Super Admin ⚡</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root { --primary: #4f46e5; --dark: #0f172a; --light: #f1f5f9; --success: #10b981; --danger: #ef4444; --card: #ffffff; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { display: flex; height: 100vh; background: var(--light); color: var(--dark); overflow: hidden; }
+    
+    /* SIDEBAR */
+    .sidebar { width: 260px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+    .brand { font-size: 22px; font-weight: 800; margin-bottom: 30px; color: var(--primary); display: flex; align-items: center; gap: 10px; letter-spacing: 0.5px; }
+    .brand span { color: white; }
+    .menu-item { padding: 14px 15px; margin-bottom: 5px; border-radius: 12px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; opacity: 0.7; font-size: 14px; font-weight: 500; }
+    .menu-item:hover, .menu-item.active { background: var(--primary); color: white; opacity: 1; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
+    
+    /* MAIN CONTENT */
+    .main { flex: 1; padding: 30px; overflow-y: auto; display: none; } /* HIDDEN UNTIL LOGGED IN */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    h2 { font-weight: 800; color: var(--dark); }
+    
+    /* CARDS */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .card { background: var(--card); padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
+    .stat-val { font-size: 32px; font-weight: 800; margin-top: 5px; color: var(--primary); }
+    .stat-lbl { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+
+    /* FORMS & TABLES */
+    .form-box { background: var(--card); padding: 25px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+    .form-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; outline: none; background: #f8fafc; font-size: 14px; }
+    button { padding: 12px 25px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+    button:hover { opacity: 0.9; }
+    
+    .table-box { background: var(--card); border-radius: 16px; border: 1px solid #e2e8f0; overflow-y: auto; max-height: 400px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 15px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+    th { background: #f8fafc; font-weight: 700; color: #64748b; font-size: 12px; text-transform: uppercase; position: sticky; top: 0; z-index: 2; }
+    
+    /* UTILS */
+    .btn-del { background: #fee2e2; color: #ef4444; padding: 6px 12px; border-radius: 6px; font-size: 12px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;}
+    .btn-apr { background: #dcfce7; color: #16a34a; padding: 6px 12px; border-radius: 6px; font-size: 12px; border: none; cursor: pointer; font-weight: 600; margin-right: 5px; display: inline-flex; align-items: center; gap: 5px;}
+    .btn-edit { background: #e0e7ff; color: #4f46e5; padding: 6px 12px; border-radius: 6px; font-size: 12px; border: none; cursor: pointer; font-weight: 600; margin-right: 5px; display: inline-flex; align-items: center; gap: 5px;}
+    .section { display: none; animation: fadeIn 0.3s; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* AUTH */
+    #authScreen { position: fixed; inset: 0; background: var(--dark); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+    .login-box { background: white; padding: 40px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    
+    /* BADGES */
+    .badge-online { background: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-offline { background: #f1f5f9; color: #64748b; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+    /* MODAL FOR EDITING */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(4px);}
+    .modal-card { background: var(--card); width: 100%; max-width: 600px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .modal-header { padding: 20px; background: var(--light); font-weight: 800; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+    .modal-body { padding: 25px; max-height: 80vh; overflow-y: auto;}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+    <div class="login-box">
+        <div style="font-size: 40px; margin-bottom: 10px; color: var(--primary);"><i class="fas fa-user-shield"></i></div>
+        <h2 style="margin-bottom:10px;">Admin Login</h2>
+        <p style="font-size: 12px; color: grey; margin-bottom: 25px;">Secure Firebase Authentication</p>
+        <input type="email" id="adminEmail" placeholder="Admin Email" style="width: 100%; margin-bottom: 15px; text-align: center;">
+        <input type="password" id="adminPass" placeholder="Password" style="width: 100%; margin-bottom: 20px; text-align: center;">
+        <button id="loginBtn" onclick="loginAdmin()" style="width: 100%;"><i class="fas fa-lock-open"></i> UNLOCK PANEL</button>
+    </div>
+</div>
+
+<div class="sidebar">
+    <div class="brand"><i class="fas fa-bolt"></i> <span>DSSSB Admin</span></div>
+    <div class="menu-item active" onclick="showSec('dashboard', this)"><i class="fas fa-chart-pie"></i> Overview</div>
+    <div class="menu-item" onclick="showSec('payments', this)"><i class="fas fa-rupee-sign"></i> Payments</div>
+    <div class="menu-item" onclick="showSec('content', this)"><i class="fas fa-layer-group"></i> Manage Content</div>
+    <div class="menu-item" onclick="showSec('extractor', this)"><i class="fas fa-filter"></i> JSON Extractor</div>
+    <div class="menu-item" onclick="showSec('engagement', this)"><i class="fas fa-fire"></i> Broadcast & QOD</div>
+    <div class="menu-item" onclick="showSec('users', this)"><i class="fas fa-users"></i> Users & Tracking</div>
+    <div class="menu-item" onclick="showSec('settings', this)"><i class="fas fa-cogs"></i> App Settings</div>
+    
+    <div class="menu-item" onclick="logoutAdmin()" style="margin-top:auto; background:#fee2e2; color:#ef4444; font-weight:bold; justify-content:center;">
+        <i class="fas fa-sign-out-alt"></i> Logout Admin
+    </div>
+</div>
+
+<div class="main">
+    
+    <div id="dashboard" class="section active">
+        <div class="header"><h2>📊 Dashboard Overview</h2> <button onclick="location.reload()"><i class="fas fa-sync"></i> Refresh</button></div>
+        <div class="stats-grid">
+            <div class="card"><div class="stat-lbl">🟢 Online Now</div><div class="stat-val" id="statLive" style="color:#10b981;">0</div></div>
+            <div class="card"><div class="stat-lbl">Total Users</div><div class="stat-val" id="statUsers">0</div></div>
+            <div class="card"><div class="stat-lbl">Tests Live</div><div class="stat-val" id="statTests">0</div></div>
+            <div class="card"><div class="stat-lbl">Pending Payments</div><div class="stat-val" id="statPay" style="color:#f59e0b;">0</div></div>
+            <div class="card"><div class="stat-lbl">Issues</div><div class="stat-val" id="statIssues" style="color:#ef4444;">0</div></div>
+        </div>
+        <div class="table-box">
+            <table><thead><tr><th>Recent Activity</th><th>Details</th><th>Time</th></tr></thead><tbody id="recentTable"></tbody></table>
+        </div>
+    </div>
+
+    <div id="payments" class="section">
+        <div class="header"><h2>💸 Payment Approvals</h2></div>
+        <div class="table-box">
+            <table><thead><tr><th>Student</th><th>UTR / Ref ID</th><th>Action</th></tr></thead><tbody id="payTable"></tbody></table>
+        </div>
+    </div>
+
+    <div id="content" class="section">
+        <div class="header"><h2>📚 Content Manager</h2></div>
+
+        <div class="form-box" style="border:2px solid #ec4899; background: #fdf2f8;">
+            <div class="form-title" style="color:#ec4899;">🖼️ Direct Image Uploader (Firebase Storage)</div>
+            <p style="color:grey; font-size:12px; margin-bottom:10px;">Aapne device se photo select karein. Upload hone ke baad milne wala URL direct apne JSON mein use karein.</p>
+            <div class="input-group">
+                <input type="file" id="imageFileInput" accept="image/*" style="border-color:#ec4899; flex: 1; padding: 8px;">
+                <button id="uploadImgBtn" onclick="uploadImageToStorage()" style="background:#ec4899;"><i class="fas fa-upload"></i> Upload</button>
+            </div>
+            <div id="imageUploadResult" style="display:none; margin-top:10px;">
+                <p style="color:#10b981; font-size:12px; font-weight:bold; margin-bottom:5px;">✅ Upload Successful! Copy this URL:</p>
+                <div class="input-group" style="margin-bottom:0;">
+                    <input type="text" id="uploadedImageUrl" readonly style="border-color:#10b981; font-family:monospace; font-size:12px;">
+                    <button onclick="copyImageUrl()" style="background:#10b981;"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-box">
+            <div class="form-title" style="color:var(--primary);">➕ Add New Test (Metadata)</div>
+            <div class="grid-2">
+                <input type="text" id="tTitle" placeholder="Test Title">
+                <input type="text" id="tID" placeholder="Unique ID (e.g., mock_01)">
+                <select id="tCat"><option>Full Mock</option><option>Maths</option><option>Reasoning</option><option>English</option><option>Hindi</option><option>GK</option><option>Computer</option><option>Assistant Superintendent</option><option>DASS Grade II</option></select>
+                <input type="number" id="tTime" placeholder="Total Mins">
+                <input type="number" id="tQs" placeholder="Total Questions">
+                <input type="number" id="tCutoff" placeholder="Cut-off Marks (e.g. 40)">
+                <input type="number" id="tPm" placeholder="+ve Marks (e.g. 1)" step="0.1" value="1">
+                <input type="number" id="tNm" placeholder="-ve Marks (e.g. 0.25)" step="0.01" value="0.25">
+                <select id="tType"><option value="free">🟢 Free Test</option><option value="pro">👑 Pro Test</option></select>
+                <select id="tLock">
+                    <option value="true">🔒 Sections Locked</option>
+                    <option value="false">🔓 Sections Unlocked</option>
+                </select>
+                <select id="tLive" style="grid-column: span 2;" onchange="document.getElementById('tScheduleBox').style.display = this.value === 'scheduled' ? 'block' : 'none'">
+                    <option value="false">⚪ Normal Test</option>
+                    <option value="true">🔴 LIVE Test</option>
+                    <option value="scheduled">⏰ Scheduled Test</option>
+                </select>
+            </div>
+            <div id="tScheduleBox" style="display:none; margin-bottom:15px;">
+                <label style="font-size:12px; font-weight:bold; color:#f59e0b;">Set Launch Date & Time:</label>
+                <input type="datetime-local" id="tScheduleTime" style="border-color:#f59e0b;">
+            </div>
+            <button onclick="addTest()" style="width: 100%;"><i class="fas fa-plus"></i> Add Test to Dashboard</button>
+        </div>
+
+        <div class="form-box" style="border:2px solid #3b82f6;">
+            <div class="form-title" style="color:#3b82f6;">📤 Bulk Upload Questions (JSON)</div>
+            <p style="color:grey; font-size:12px; margin-bottom:10px;">Yahan pehle apne Test ka exact ID daalein, aur fir JSON paste karke upload karein.</p>
+            <input type="text" id="qTestID" placeholder="Enter Exact Test ID (e.g., mock_01)" style="margin-bottom:10px; border-color:#3b82f6;">
+            <textarea id="qJSON" placeholder="Paste your JSON array here like: [ { q_en: '...', ans: '1', ... } ]" style="height:150px; font-family:monospace; font-size:12px;"></textarea>
+            <button onclick="uploadQuestions()" style="background:#3b82f6; width:100%;"><i class="fas fa-cloud-upload-alt"></i> Upload Questions to Database</button>
+        </div>
+
+        <div class="form-box" style="border:2px solid #10b981; background: #f0fdf4;">
+            <div class="form-title" style="color:#10b981;">🌪️ Mega Mix Test Generator</div>
+            <p style="color:grey; font-size:12px; margin-bottom:10px;">Purane chote-chote tests ko jod kar ek naya 'Full Mock Test' banayein bina kisi JSON upload ke.</p>
+            <div class="grid-2">
+                <input type="text" id="mixTitle" placeholder="New Mix Test Title (e.g. Mega Mock)">
+                <input type="text" id="mixID" placeholder="New Unique ID (e.g. mix_mock_01)">
+                <input type="text" id="mixSourceIDs" placeholder="Source Test IDs (comma separated, e.g. mock_01, mock_02)" style="grid-column: span 2;">
+                <select id="mixCat"><option>Full Mock</option><option>Maths</option><option>Reasoning</option><option>English</option><option>Hindi</option><option>GK</option><option>Computer</option><option>Assistant Superintendent</option></select>
+                <input type="number" id="mixTime" placeholder="Total Mins">
+                <input type="number" id="mixQs" placeholder="Total Questions (Optional)">
+                <input type="number" id="mixCutoff" placeholder="Cut-off Marks">
+                <input type="number" id="mixPm" placeholder="+ve Marks (e.g. 1)" step="0.1" value="1">
+                <input type="number" id="mixNm" placeholder="-ve Marks (e.g. 0.25)" step="0.01" value="0.25">
+                <select id="mixType"><option value="free">🟢 Free Test</option><option value="pro">👑 Pro Test</option></select>
+                <select id="mixLock">
+                    <option value="true">🔒 Sections Locked</option>
+                    <option value="false">🔓 Sections Unlocked</option>
+                </select>
+                <select id="mixLive" style="grid-column: span 2;" onchange="document.getElementById('mixScheduleBox').style.display = this.value === 'scheduled' ? 'block' : 'none'">
+                    <option value="false">⚪ Normal Test</option>
+                    <option value="true">🔴 LIVE Test</option>
+                    <option value="scheduled">⏰ Scheduled Test</option>
+                </select>
+            </div>
+            <div id="mixScheduleBox" style="display:none; margin-bottom:15px;">
+                <label style="font-size:12px; font-weight:bold; color:#f59e0b;">Set Launch Date & Time:</label>
+                <input type="datetime-local" id="mixScheduleTime" style="border-color:#f59e0b;">
+            </div>
+            <button onclick="generateMixTest()" style="background:#10b981; width:100%; font-size: 15px;"><i class="fas fa-magic"></i> Generate & Upload Mix Test</button>
+        </div>
+
+        <div class="form-box" style="border:2px solid #8b5cf6; background: #faf5ff;">
+            <div class="form-title" style="color:#8b5cf6;">✏️ Edit Questions of Existing Tests (JSON)</div>
+            <p style="color:grey; font-size:12px; margin-bottom:10px;">Firebase kholne ki zarurat nahi! Yahan se test select karein, uske questions edit karein, aur update kar dein.</p>
+            <div class="input-group">
+                <select id="editTestSelect" style="border-color:#8b5cf6; flex: 1;">
+                    <option value="">-- Select Test to Edit Questions --</option>
+                </select>
+                <button onclick="fetchTestJSON()" style="background:#8b5cf6;"><i class="fas fa-download"></i> Fetch Data</button>
+            </div>
+            <div id="editArea" style="display:none; margin-top:15px;">
+                <p style="color:#ef4444; font-size:11px; font-weight:bold; margin-bottom:5px;">⚠️ Be careful! Don't mess up the JSON format (brackets, commas, quotes).</p>
+                <textarea id="editJSONText" style="height:300px; font-family:monospace; font-size:13px; margin-bottom:10px; border-color:#8b5cf6;"></textarea>
+                <button onclick="updateTestJSON()" style="background:#10b981; width:100%;"><i class="fas fa-save"></i> Update Test Data</button>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-box" style="margin-bottom:0;">
+                <div class="form-title" style="color:#f59e0b;">🎥 Add Video</div>
+                <input type="text" id="vTitle" placeholder="Title" style="margin-bottom:10px;">
+                <input type="text" id="vUrl" placeholder="YouTube Link" style="margin-bottom:10px;">
+                <input type="text" id="vThumb" placeholder="Thumb URL (Optional)" style="margin-bottom:10px;">
+                <select id="vType" style="margin-bottom:10px;"><option value="free">🟢 Free Video</option><option value="pro">👑 Pro Video</option></select>
+                <button onclick="addVideo()" style="background:#f59e0b; width:100%;"><i class="fas fa-plus"></i> Add Video</button>
+            </div>
+            <div class="form-box" style="margin-bottom:0;">
+                <div class="form-title" style="color:#10b981;">📄 Add Note</div>
+                <input type="text" id="nTitle" placeholder="Title" style="margin-bottom:10px;">
+                <input type="text" id="nUrl" placeholder="PDF Link" style="margin-bottom:10px;">
+                <select id="nType" style="margin-bottom:10px;"><option value="free">🟢 Free Note</option><option value="pro">👑 Pro Note</option></select>
+                <button onclick="addNote()" style="background:#10b981; width:100%;"><i class="fas fa-plus"></i> Add Note</button>
+            </div>
+        </div>
+        
+        <h3 style="margin-top:20px; margin-bottom:10px;">Manage All Content (Edit / Delete)</h3>
+        <div class="table-box">
+            <table><thead><tr><th>Type</th><th>Title</th><th>Action</th></tr></thead><tbody id="contentTable"></tbody></table>
+        </div>
+    </div>
+
+    <div id="extractor" class="section">
+        <div class="header"><h2>🔍 Master JSON Extractor</h2></div>
+        
+        <div class="form-box" style="border:2px solid #0ea5e9; background: #f0f9ff;">
+            <div class="form-title" style="color:#0ea5e9;"><i class="fas fa-database"></i> 1. Paste Master Question Bank (JSON Array)</div>
+            <p style="color:grey; font-size:12px; margin-bottom:10px;">Apna bada JSON (jisme 1000+ questions ho) yahan paste karein.</p>
+            <textarea id="masterJson" placeholder='[{"section": "Maths", "topic": "Algebra", ...}]' style="height:150px; font-family:monospace; font-size:12px; border-color:#0ea5e9; margin-bottom:10px;"></textarea>
+            <button onclick="analyzeJson()" style="background:#0ea5e9; width:100%;"><i class="fas fa-search"></i> Analyze & Load Filters</button>
+            <div id="loadStats" style="font-size:13px; font-weight:bold; color:#0ea5e9; margin-top:10px;"></div>
+        </div>
+
+        <div class="form-box" id="filterControls" style="display:none; border:2px solid #8b5cf6; background: #faf5ff;">
+            <div class="form-title" style="color:#8b5cf6;"><i class="fas fa-filter"></i> 2. Filter & Extract</div>
+            <div class="grid-2">
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:grey;">Filter by Section:</label>
+                    <select id="selSection" style="border-color:#8b5cf6;"><option value="ALL">All Sections</option></select>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:grey;">Filter by Topic:</label>
+                    <select id="selTopic" style="border-color:#8b5cf6;"><option value="ALL">All Topics</option></select>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:grey;">Filter by Difficulty:</label>
+                    <select id="selDiff" style="border-color:#8b5cf6;">
+                        <option value="ALL">All Difficulties</option>
+                        <option value="easy">🟢 Easy</option>
+                        <option value="medium">🟡 Medium</option>
+                        <option value="hard">🔴 Hard</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:grey;">Max Questions (0 for all):</label>
+                    <input type="number" id="numLimit" value="0" min="0" style="border-color:#8b5cf6;">
+                </div>
+            </div>
+            <button onclick="extractQuestions()" style="background:#8b5cf6; width:100%; margin-top:10px;"><i class="fas fa-bolt"></i> Extract & Shuffle Questions</button>
+        </div>
+
+        <div class="form-box" id="extractorResultBox" style="display:none; border:2px solid #10b981; background: #f0fdf4;">
+            <div class="form-title" style="color:#10b981;"><i class="fas fa-check-circle"></i> 3. Extracted JSON Result</div>
+            <textarea id="outputJson" readonly placeholder="Filtered questions will appear here..." style="height:150px; font-family:monospace; font-size:12px; border-color:#10b981; margin-bottom:10px;"></textarea>
+            <div id="outStats" style="font-size:13px; font-weight:bold; color:#10b981; margin-bottom:10px;"></div>
+            <button onclick="copyJSON()" style="background:#10b981; width:100%;"><i class="fas fa-copy"></i> Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <div id="engagement" class="section">
+        <div class="header"><h2>🔥 Engagement Tools</h2></div>
+
+        <div class="form-box" style="border:2px solid #ef4444;">
+            <div class="form-title" style="color:#ef4444;">📢 Send Pop-up Alert</div>
+            <input type="text" id="alertMsg" placeholder="Message (e.g. Result Announced!)" style="margin-bottom:10px;">
+            <button onclick="sendAlert()" style="background:#ef4444;"><i class="fas fa-paper-plane"></i> Send Alert</button>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-box" style="border:2px solid #f97316;">
+                <div class="form-title" style="color:#f97316;">💡 Question of the Day</div>
+                <textarea id="qodQ" placeholder="Question..." style="height:50px; margin-bottom:10px;"></textarea>
+                <div class="grid-2" style="margin-bottom:0;"><input type="text" id="qodO1" placeholder="Op1"><input type="text" id="qodO2" placeholder="Op2"></div>
+                <div class="grid-2"><input type="text" id="qodO3" placeholder="Op3"><input type="text" id="qodO4" placeholder="Op4"></div>
+                <select id="qodAns" style="margin-bottom:10px;"><option value="0">Ans: 1</option><option value="1">Ans: 2</option><option value="2">Ans: 3</option><option value="3">Ans: 4</option></select>
+                <button onclick="updateQOD()" style="background:#f97316; width:100%;"><i class="fas fa-sync"></i> Update QOD</button>
+            </div>
+            <div class="form-box">
+                <div class="form-title">📰 Update News Ticker</div>
+                <input type="text" id="newsInput" placeholder="Announcement text..." style="margin-bottom:10px;">
+                <button onclick="updateNews()" style="width:100%;"><i class="fas fa-bullhorn"></i> Update News</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="users" class="section">
+        <div class="header"><h2>👥 Users & Tracking</h2></div>
+        
+        <div class="form-box" style="background:#fffbeb; border-color:#fbbf24;">
+            <div class="form-title" style="color:#d97706;">👑 Manual Pro Management</div>
+            <div class="input-group" style="margin-bottom: 0;">
+                <input type="text" id="proInput" placeholder="Enter Telegram ID (e.g. 5875604921)">
+                <button onclick="addPro()" style="background:#d97706;"><i class="fas fa-star"></i> Unlock Pro</button>
+            </div>
+        </div>
+
+        <h3>👑 Active Pro Users</h3>
+        <div class="table-box" style="max-height: 350px;">
+            <table><thead><tr><th>Pro User Info</th><th>Action</th></tr></thead><tbody id="proUsersTableBody"></tbody></table>
+        </div>
+
+        <h3 style="margin-top:20px;">🟢 Live & Recent Students</h3>
+        <div class="table-box">
+            <table><thead><tr><th>User Info</th><th>Activity</th><th>Time</th></tr></thead><tbody id="presenceTable"></tbody></table>
+        </div>
+
+        <h3 style="margin-top:20px;">🚩 Student Issues</h3>
+        <div class="table-box">
+            <table><thead><tr><th>User</th><th>Issue</th><th>Action</th></tr></thead><tbody id="reportTable"></tbody></table>
+        </div>
+    </div>
+
+    <div id="settings" class="section">
+        <div class="header"><h2>⚙️ App Control Center</h2></div>
+        <div class="grid-2">
+            <div class="form-box" style="border:2px solid #6366f1;">
+                <div class="form-title">🔒 Maintenance Mode</div>
+                <p style="color:grey; font-size:13px; margin-bottom:10px;">Lock app for all users.</p>
+                <button onclick="toggleMaintenance(true)" style="background:#ef4444; margin-right:10px;"><i class="fas fa-lock"></i> Lock App</button>
+                <button onclick="toggleMaintenance(false)" style="background:#10b981;"><i class="fas fa-unlock"></i> Unlock App</button>
+            </div>
+            <div class="form-box" style="border:2px solid #ec4899;">
+                <div class="form-title">🏆 Leaderboard</div>
+                <p style="color:grey; font-size:13px; margin-bottom:10px;">Clear scores for new week.</p>
+                <button onclick="resetLeaderboard()" style="background:#ec4899;"><i class="fas fa-trash-alt"></i> Reset Scores</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="editTestModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <span>✏️ Edit Test Information</span>
+            <button onclick="closeEditModal()" style="border:none; background:none; font-size:24px; color:grey; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="input-group"><input type="text" id="eTitle" placeholder="Test Title" style="flex:1;"><input type="text" id="eID" readonly style="background:#e2e8f0; width:140px; cursor:not-allowed;"></div>
+            <div class="grid-2">
+                <select id="eCat"><option>Full Mock</option><option>Maths</option><option>Reasoning</option><option>English</option><option>Hindi</option><option>GK</option><option>Computer</option><option>Assistant Superintendent</option><option>DASS Grade II</option></select>
+                <input type="number" id="eTime" placeholder="Mins">
+                <input type="number" id="eQs" placeholder="Questions">
+                <input type="number" id="eCutoff" placeholder="Cutoff Marks">
+                <input type="number" id="ePm" placeholder="+ve Marks" step="0.1">
+                <input type="number" id="eNm" placeholder="-ve Marks" step="0.01">
+                <select id="eType"><option value="free">Free Test</option><option value="pro">Pro Test</option></select>
+                <select id="eLock">
+                    <option value="true">🔒 Sections Locked</option>
+                    <option value="false">🔓 Sections Unlocked</option>
+                </select>
+                <select id="eLive" style="grid-column: span 2;" onchange="document.getElementById('eScheduleBox').style.display = this.value === 'scheduled' ? 'block' : 'none'">
+                    <option value="false">Normal (Hidden)</option>
+                    <option value="true">LIVE Now</option>
+                    <option value="scheduled">Scheduled</option>
+                </select>
+            </div>
+            <div id="eScheduleBox" style="display:none; margin-bottom:15px;">
+                <label style="font-size:12px; font-weight:bold; color:#f59e0b;">Scheduled Time:</label>
+                <input type="datetime-local" id="eScheduleTime" style="border-color:#f59e0b;">
+            </div>
+            <button onclick="saveEditTestMetadata()" style="width:100%; background:var(--success);"><i class="fas fa-check-circle"></i> Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* =========================================
+   🔥 ORIGINAL FIREBASE CONFIG 🔥
+   ========================================= */
+const firebaseConfig = { 
+    apiKey: "AIzaSyDGolcXV0efZxRdOvBtHfeT72mkNLlbAwI", 
+    authDomain: "dsssbexamportal.firebaseapp.com", 
+    databaseURL: "https://dsssbexamportal-default-rtdb.asia-southeast1.firebasedatabase.app", 
+    projectId: "dsssbexamportal", 
+    storageBucket: "dsssbexamportal.firebasestorage.app", 
+    messagingSenderId: "853373171134", 
+    appId: "1:853373171134:web:77b967374e6f34311af5ef" 
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const storage = firebase.storage();
+
+let contentCache = { tests: {}, videos: {}, notes: {} };
+let userMap = {}; 
+let proUsersSnap = null; 
+
+/* =========================================
+   🔥 FIREBASE AUTHENTICATION LOGIC 🔥
+   ========================================= */
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        document.getElementById('authScreen').style.display = 'none';
+        document.querySelector('.main').style.display = 'block';
+        loadData();
+    } else {
+        document.getElementById('authScreen').style.display = 'flex';
+        document.querySelector('.main').style.display = 'none';
+    }
+});
+
+function loginAdmin() {
+    const email = document.getElementById('adminEmail').value.trim();
+    const pass = document.getElementById('adminPass').value.trim();
+    const btn = document.getElementById('loginBtn');
+    
+    if(!email || !pass) return alert("⚠️ Please fill email and password!");
+    
+    btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Authenticating...";
+    btn.disabled = true;
+
+    firebase.auth().signInWithEmailAndPassword(email, pass)
+        .then(() => {
+            btn.innerHTML = "<i class='fas fa-lock-open'></i> UNLOCK PANEL";
+            btn.disabled = false;
+        })
+        .catch(err => {
+            alert("❌ Login Failed: " + err.message);
+            btn.innerHTML = "<i class='fas fa-lock-open'></i> UNLOCK PANEL";
+            btn.disabled = false;
+        });
+}
+
+function logoutAdmin() {
+    if(confirm("Are you sure you want to logout?")) {
+        firebase.auth().signOut().then(() => {
+            location.reload();
+        });
+    }
+}
+
+/* =========================================
+   CORE UI FUNCTIONS
+   ========================================= */
+function showSec(id, el) { 
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); 
+    document.getElementById(id).classList.add('active'); 
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active')); 
+    el.classList.add('active'); 
+}
+
+function formatTime(ts) {
+    if(!ts) return "N/A";
+    let d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+/* =========================================
+   DATA LOADING & 🔥 NEW TRACKING SYSTEM 🔥
+   ========================================= */
+function loadData() {
+    // 1. Pending Payments
+    db.ref('dsssb_payment_requests').on('value', snap => {
+        document.getElementById('statPay').innerText = snap.numChildren();
+        const tbody = document.getElementById('payTable'); tbody.innerHTML = '';
+        Object.entries(snap.val()||{}).forEach(([k,r]) => {
+            tbody.innerHTML += `<tr>
+                <td><b>${r.name}</b><br><small style="color:grey;">${r.userId}</small></td>
+                <td style="color:var(--primary); font-weight:bold;">${r.utr}</td>
+                <td>
+                    <button class="btn-apr" onclick="approve('${k}','${r.userId}')"><i class="fas fa-check"></i> Approve</button>
+                    <button class="btn-del" onclick="reject('${k}')"><i class="fas fa-times"></i> Reject</button>
+                </td>
+            </tr>`;
+        });
+    });
+
+    // 2. Reports/Issues
+    db.ref('dsssb_reports').on('value', s => {
+        document.getElementById('statIssues').innerText = s.numChildren();
+        const tbody = document.getElementById('reportTable'); tbody.innerHTML = '';
+        Object.entries(s.val()||{}).forEach(([k,r]) => {
+            tbody.innerHTML += `<tr>
+                <td><b>${r.user}</b></td>
+                <td style="color:var(--danger);">${r.issue}</td>
+                <td><button class="btn-del" onclick="resolve('${k}')"><i class="fas fa-check-circle"></i> Resolve</button></td>
+            </tr>`;
+        });
+    });
+
+    // 3. 🔥 LIVE ACTIVITY TRACKING (SPY SYSTEM) 🔥
+    db.ref('dsssb_analytics/presence').on('value', snap => {
+        let html = ''; let users = [];
+        
+        snap.forEach(child => { 
+            let u = { id: child.key, ...child.val() };
+            users.push(u); 
+            if(u.id && u.name) userMap[String(u.id).trim()] = u.name;
+        });
+        
+        // Sort by time (most recent first)
+        users.sort((a, b) => (b.time || 0) - (a.time || 0));
+        
+        let onlineCount = users.length; 
+        document.getElementById('statUsers').innerText = onlineCount; // Sync users stat
+        document.getElementById('statLive').innerText = onlineCount;
+
+        users.forEach(u => {
+            // Activity color coding
+            let actColor = "var(--primary)";
+            let actIcon = "fa-location-arrow";
+            
+            if(u.activity && u.activity.includes("Giving Mock Test")) {
+                actColor = "#ef4444"; actIcon = "fa-pen-nib"; // Red for test
+            } else if(u.activity && u.activity.includes("Dashboard")) {
+                actColor = "#10b981"; actIcon = "fa-home"; // Green for home
+            } else {
+                actColor = "#8b5cf6"; actIcon = "fa-search"; // Purple for exploring
+            }
+
+            html += `<tr>
+                <td><b style="font-size:14px;">${u.name || 'Unknown User'}</b><br><small style="color:grey; font-weight:600;">ID: ${u.id}</small></td>
+                <td>
+                    <span style="font-size:12px; color:${actColor}; font-weight:700; background:${actColor}15; padding:6px 10px; border-radius:8px; display:inline-block;">
+                        <i class="fas ${actIcon}"></i> ${u.activity || 'Exploring Portal'}
+                    </span>
+                </td>
+                <td><span style="font-size:12px; color:grey; font-weight:600;"><i class="fas fa-clock"></i> ${formatTime(u.time)}</span></td>
+            </tr>`;
+        });
+        
+        document.getElementById('presenceTable').innerHTML = html || "<tr><td colspan='3' style='text-align:center; padding:30px; color:grey;'>No active users right now...</td></tr>";
+        renderProUsersTable();
+    });
+
+    // 4. Pro Users List
+    db.ref('dsssb_pro_users').on('value', snap => {
+        proUsersSnap = snap;
+        renderProUsersTable();
+    });
+
+    // 5. Test Metadata
+    db.ref('dsssb_tests_db').on('value', s => {
+        document.getElementById('statTests').innerText = s.numChildren();
+        contentCache.tests = s.val() || {};
+        
+        const testSelect = document.getElementById('editTestSelect');
+        testSelect.innerHTML = '<option value="">-- Select Test to Edit Questions --</option>';
+        Object.entries(contentCache.tests).forEach(([k,v]) => {
+            testSelect.innerHTML += `<option value="${k}">${v.title} (${k})</option>`;
+        });
+        renderContentTable();
+    });
+    
+    // 6. Videos & Notes
+    db.ref('dsssb_videos_db').on('value', s => { contentCache.videos = s.val() || {}; renderContentTable(); });
+    db.ref('dsssb_notes_db').on('value', s => { contentCache.notes = s.val() || {}; renderContentTable(); });
+    
+    // 7. Recent Test Submissions
+    db.ref('dsssb_results_live').limitToLast(10).on('value', s => {
+        const tbody = document.getElementById('recentTable'); tbody.innerHTML = '';
+        Object.values(s.val()||{}).reverse().forEach(r => {
+            tbody.innerHTML += `<tr>
+                <td><b>${r.name}</b></td>
+                <td>Scored <b style="color:var(--primary);">${r.score}</b> in ${r.testId}</td>
+                <td><span style="font-size:12px; color:grey;">Just now</span></td>
+            </tr>`;
+        });
+    });
+}
+
+/* =========================================
+   PRO USERS RENDERING LOGIC (WITH REAL NAMES)
+   ========================================= */
+function renderProUsersTable() {
+    const tbody = document.getElementById('proUsersTableBody');
+    if (!tbody || !proUsersSnap) return;
+    
+    tbody.innerHTML = '';
+    let count = 0;
+    
+    proUsersSnap.forEach(child => {
+        count++;
+        let val = child.val();
+        let rawId = "";
+
+        if (typeof val === 'object' && val !== null) {
+            rawId = val.uid || val.id || val.userId || JSON.stringify(val);
+        } else {
+            rawId = String(val).trim();
+        }
+
+        let userName = userMap[rawId] || "Student Name Missing";
+
+        tbody.innerHTML += `<tr>
+            <td>
+                <b style="color:var(--primary); font-size:15px;">${userName}</b><br>
+                <span style="font-size:12px; color:var(--dark); font-weight:600;">ID: ${rawId}</span><br>
+                <small style="color:grey; font-size:10px;">DB Key: ${child.key}</small>
+            </td>
+            <td style="vertical-align: middle;">
+                <button class="btn-del" onclick="revokeProUser('${child.key}')"><i class="fas fa-trash"></i> Revoke</button>
+            </td>
+        </tr>`;
+    });
+
+    if(count === 0) tbody.innerHTML = "<tr><td colspan='2' style='text-align:center;'>No Pro Users found.</td></tr>";
+}
+
+function revokeProUser(key) {
+    if(confirm("Remove this user from PRO list? They will need to pay again.")) {
+        db.ref('dsssb_pro_users/' + key).remove().then(() => alert("PRO Revoked!"));
+    }
+}
+
+/* =========================================
+   CONTENT RENDERING LOGIC
+   ========================================= */
+function renderContentTable() {
+    const tbody = document.getElementById('contentTable'); 
+    let html = '';
+    
+    Object.entries(contentCache.tests).reverse().forEach(([k,v]) => {
+        let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
+        
+        let liveStatus = '⚪ Normal';
+        if (v.status === 'scheduled' || v.scheduledTime) liveStatus = '⏰ ' + new Date(v.scheduledTime).toLocaleString();
+        else if (v.isLive === 'true' || v.isLive === true || v.status === 'true') liveStatus = '🔴 LIVE';
+
+        html += `<tr>
+            <td><span style="background:#e0e7ff; color:#4f46e5; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">Test</span></td>
+            <td><b style="font-size:15px;">${v.title}</b> <br><span style="font-size:11px; color:grey; font-weight:600;">ID: ${k} &bull; ${badge} &bull; ${liveStatus}</span></td>
+            <td>
+                <button class="btn-edit" onclick="openEditMetadataModal('${k}')"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn-del" onclick="delItem('dsssb_tests_db/${k}', true, '${k}')"><i class="fas fa-trash"></i> Delete</button>
+            </td>
+        </tr>`;
+    });
+    
+    Object.entries(contentCache.videos).reverse().forEach(([k,v]) => {
+        let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
+        html += `<tr>
+            <td><span style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">Video</span></td>
+            <td><b>${v.title}</b> <br><span style="font-size:11px; color:grey; font-weight:600;">${badge}</span></td>
+            <td><button class="btn-del" onclick="delItem('dsssb_videos_db/${k}', false)"><i class="fas fa-trash"></i> Delete</button></td>
+        </tr>`;
+    });
+    
+    Object.entries(contentCache.notes).reverse().forEach(([k,v]) => {
+        let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
+        html += `<tr>
+            <td><span style="background:#d1fae5; color:#059669; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">Note</span></td>
+            <td><b>${v.title}</b> <br><span style="font-size:11px; color:grey; font-weight:600;">${badge}</span></td>
+            <td><button class="btn-del" onclick="delItem('dsssb_notes_db/${k}', false)"><i class="fas fa-trash"></i> Delete</button></td>
+        </tr>`;
+    });
+    
+    tbody.innerHTML = html;
+}
+
+/* =========================================
+   METADATA EDITOR (MODAL) LOGIC
+   ========================================= */
+function openEditMetadataModal(key) {
+    const t = contentCache.tests[key];
+    document.getElementById('eID').value = key;
+    document.getElementById('eTitle').value = t.title || "";
+    document.getElementById('eCat').value = t.category || "";
+    document.getElementById('eTime').value = t.time || "";
+    document.getElementById('eQs').value = t.qs || "";
+    document.getElementById('eCutoff').value = t.cutoff || ""; 
+    document.getElementById('eType').value = t.type || 'free';
+    
+    // Set Dynamic Marking Values
+    document.getElementById('ePm').value = t.pm !== undefined ? t.pm : 1;
+    document.getElementById('eNm').value = t.nm !== undefined ? t.nm : 0.25;
+
+    // Set Section Lock Status
+    let lockStat = (t.lock === false || t.lock === "false") ? "false" : "true";
+    document.getElementById('eLock').value = lockStat;
+
+    let statusVal = t.status || (t.isLive === 'true' || t.isLive === true ? 'true' : 'false');
+    if(t.scheduledTime && Date.now() < t.scheduledTime) statusVal = 'scheduled';
+    
+    document.getElementById('eLive').value = statusVal;
+    document.getElementById('eScheduleBox').style.display = statusVal === 'scheduled' ? 'block' : 'none';
+    
+    if(t.scheduledTime) {
+        let d = new Date(t.scheduledTime);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        document.getElementById('eScheduleTime').value = d.toISOString().slice(0,16);
+    } else {
+        document.getElementById('eScheduleTime').value = "";
+    }
+    
+    db.ref('dsssb_tests_meta/' + key + '/cutoff').once('value').then(snap => {
+        document.getElementById('eCutoff').value = snap.exists() ? snap.val() : "";
+        document.getElementById('editTestModal').style.display = 'flex';
+    });
+}
+
+function closeEditModal() { document.getElementById('editTestModal').style.display = 'none'; }
+
+function saveEditTestMetadata() {
+    const id = document.getElementById('eID').value;
+    const statusVal = document.getElementById('eLive').value;
+    let scheduledTime = null;
+    
+    if(statusVal === 'scheduled') {
+        const st = document.getElementById('eScheduleTime').value;
+        if(st) scheduledTime = new Date(st).getTime();
+        else return alert("Select a scheduled time!");
+    }
+
+    const lockVal = document.getElementById('eLock').value === 'true';
+
+    const d = {
+        title: document.getElementById('eTitle').value,
+        id: id,
+        time: document.getElementById('eTime').value,
+        qs: document.getElementById('eQs').value,
+        category: document.getElementById('eCat').value,
+        type: document.getElementById('eType').value,
+        isLive: statusVal === 'true' ? 'true' : 'false',
+        status: statusVal,
+        scheduledTime: scheduledTime,
+        pm: document.getElementById('ePm').value || 1,
+        nm: document.getElementById('eNm').value || 0.25,
+        lock: lockVal // Update lock status
+    };
+
+    const cutoffVal = document.getElementById('eCutoff').value;
+
+    db.ref('dsssb_tests_db/' + id).update(d).then(() => {
+        if(cutoffVal) return db.ref('dsssb_tests_meta/' + id + '/cutoff').set(parseFloat(cutoffVal));
+    }).then(() => {
+        alert("✅ Test Updated Successfully!");
+        closeEditModal();
+    });
+}
+
+/* =========================================
+   IMAGE UPLOAD LOGIC
+   ========================================= */
+function uploadImageToStorage() {
+    const fileInput = document.getElementById('imageFileInput');
+    const file = fileInput.files[0];
+    if (!file) return alert("⚠️ Please select an image file first!");
+    
+    const btn = document.getElementById('uploadImgBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Uploading..."; btn.disabled = true;
+
+    const fileName = 'dsssb_images/' + Date.now() + '_' + file.name;
+    const storageRef = storage.ref().child(fileName);
+    
+    storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadURL => {
+        document.getElementById('imageUploadResult').style.display = 'block';
+        document.getElementById('uploadedImageUrl').value = downloadURL;
+        btn.innerHTML = originalText; btn.disabled = false; fileInput.value = ""; 
+        alert("✅ Image uploaded successfully!");
+    }).catch(error => {
+        alert("❌ Upload failed: " + error.message);
+        btn.innerHTML = originalText; btn.disabled = false;
+    });
+}
+
+function copyImageUrl() {
+    const copyText = document.getElementById("uploadedImageUrl");
+    copyText.select(); navigator.clipboard.writeText(copyText.value);
+    alert("📋 Image URL Copied to Clipboard!\nPaste inside <img> tag in JSON.");
+}
+
+/* =========================================
+   TEST CREATION / MEGA MIX / JSON LOGIC
+   ========================================= */
+function addTest() { 
+    const titleVal = document.getElementById('tTitle').value;
+    const idVal = document.getElementById('tID').value.trim();
+    const timeVal = document.getElementById('tTime').value;
+    const qsVal = document.getElementById('tQs').value;
+    const catVal = document.getElementById('tCat').value;
+    const typeVal = document.getElementById('tType').value;
+    const cutoffVal = document.getElementById('tCutoff').value || 0;
+    const pmVal = document.getElementById('tPm').value || 1;       
+    const nmVal = document.getElementById('tNm').value || 0.25;    
+    const lockVal = document.getElementById('tLock').value === 'true'; // New Logic
+    const statusVal = document.getElementById('tLive').value; 
+
+    let scheduledTime = null;
+    if(statusVal === 'scheduled') {
+        const st = document.getElementById('tScheduleTime').value;
+        if(st) scheduledTime = new Date(st).getTime();
+        else return alert("Select a scheduled time!");
+    }
+
+    const d = { 
+        title: titleVal, id: idVal, time: timeVal, qs: qsVal, 
+        category: catVal, type: typeVal, 
+        isLive: statusVal === 'true' ? 'true' : 'false', 
+        status: statusVal, scheduledTime: scheduledTime,
+        pm: pmVal, nm: nmVal,
+        lock: lockVal // Push lock setting
+    }; 
+
+    if(titleVal && idVal) {
+        db.ref('dsssb_tests_db/' + idVal).set(d).then(() => { 
+            return db.ref('dsssb_tests_meta/' + idVal + '/cutoff').set(parseFloat(cutoffVal));
+        }).then(() => {
+            alert("✅ Test Metadata Added Successfully!"); 
+            document.getElementById('qTestID').value = idVal; 
+        }).catch(err => { alert("Error: " + err.message); }); 
+    } else { alert("⚠️ Please fill Test Title and Unique ID"); }
+}
+
+function uploadQuestions() {
+    const tId = document.getElementById('qTestID').value.trim();
+    const rawJson = document.getElementById('qJSON').value.trim();
+    if(!tId || !rawJson) return alert("Please enter Test ID and paste the JSON data!");
+    try {
+        const parsedQuestions = JSON.parse(rawJson);
+        if(!Array.isArray(parsedQuestions)) return alert("Invalid Format! JSON ek Array hona chahiye [ ].");
+        db.ref('dsssb_questions_db/' + tId).set(parsedQuestions).then(() => {
+            alert("✅ Excellent! " + parsedQuestions.length + " Questions successfully uploaded to " + tId);
+            document.getElementById('qJSON').value = ""; 
+        });
+    } catch(error) { alert("❌ Error: JSON Format galat hai.\nDetail: " + error.message); }
+}
+
+async function generateMixTest() {
+    const titleVal = document.getElementById('mixTitle').value.trim();
+    const idVal = document.getElementById('mixID').value.trim();
+    const sourceIdsVal = document.getElementById('mixSourceIDs').value.trim();
+    const timeVal = document.getElementById('mixTime').value;
+    const qsVal = document.getElementById('mixQs').value;
+    const catVal = document.getElementById('mixCat').value;
+    const typeVal = document.getElementById('mixType').value;
+    const cutoffVal = document.getElementById('mixCutoff').value || 0;
+    const pmVal = document.getElementById('mixPm').value || 1;       
+    const nmVal = document.getElementById('mixNm').value || 0.25;    
+    const lockVal = document.getElementById('mixLock').value === 'true'; // New Logic
+    const statusVal = document.getElementById('mixLive').value; 
+
+    let scheduledTime = null;
+    if(statusVal === 'scheduled') {
+        const st = document.getElementById('mixScheduleTime').value;
+        if(st) scheduledTime = new Date(st).getTime();
+        else return alert("Select a scheduled time!");
+    }
+
+    if(!titleVal || !idVal || !sourceIdsVal) return alert("⚠️ Title, New ID, aur Source IDs bharna zaroori hai!");
+    const sourceIDs = sourceIdsVal.split(',').map(id => id.trim()).filter(id => id);
+    if(sourceIDs.length === 0) return alert("⚠️ Invalid Source IDs format.");
+
+    try {
+        let combinedQuestions = [];
+        for (let sourceId of sourceIDs) {
+            const snap = await db.ref('dsssb_questions_db/' + sourceId).once('value');
+            if (snap.exists()) {
+                let qs = snap.val();
+                if(Array.isArray(qs)) combinedQuestions = combinedQuestions.concat(qs);
+            } else { return alert(`❌ Error: '${sourceId}' test not found in DB!`); }
+        }
+        if(combinedQuestions.length === 0) return alert("⚠️ No questions found.");
+        if(!confirm(`🔥 Fetched ${combinedQuestions.length} total Qs. Publish '${titleVal}'?`)) return;
+
+        await db.ref('dsssb_questions_db/' + idVal).set(combinedQuestions);
+        await db.ref('dsssb_tests_meta/' + idVal + '/cutoff').set(parseFloat(cutoffVal));
+        
+        const d = { 
+            title: titleVal, id: idVal, time: timeVal, qs: qsVal || combinedQuestions.length, 
+            category: catVal, type: typeVal, 
+            isLive: statusVal === 'true' ? 'true' : 'false', 
+            status: statusVal, scheduledTime: scheduledTime,
+            pm: pmVal, nm: nmVal,
+            lock: lockVal // Push lock setting
+        }; 
+        await db.ref('dsssb_tests_db/' + idVal).set(d);
+
+        alert("🚀 Mega Mix Test Generated & Published!");
+    } catch(error) { alert("❌ Generation Failed: " + error.message); }
+}
+
+let currentEditTestId = "";
+function fetchTestJSON() {
+    const testId = document.getElementById('editTestSelect').value;
+    if(!testId) return alert("Select a test first!");
+    
+    document.getElementById('editJSONText').value = "Fetching data... please wait.";
+    document.getElementById('editArea').style.display = 'block';
+
+    db.ref('dsssb_questions_db/' + testId).once('value').then(snap => {
+        if(snap.exists()) {
+            currentEditTestId = testId;
+            document.getElementById('editJSONText').value = JSON.stringify(snap.val(), null, 4);
+        } else {
+            document.getElementById('editJSONText').value = "";
+            alert("No questions found for this Test ID yet.");
+            document.getElementById('editArea').style.display = 'none';
+        }
+    });
+}
+
+function updateTestJSON() {
+    if(!currentEditTestId) return alert("No test selected!");
+    const rawEditedJson = document.getElementById('editJSONText').value.trim();
+    if(!rawEditedJson) return alert("JSON cannot be empty!");
+    
+    try {
+        const parsedEditedData = JSON.parse(rawEditedJson);
+        if(!Array.isArray(parsedEditedData)) return alert("JSON must be an Array [ ].");
+        if(confirm("Overwrite questions for " + currentEditTestId + "?")) {
+            db.ref('dsssb_questions_db/' + currentEditTestId).set(parsedEditedData).then(() => {
+                alert("✅ Data updated successfully.");
+                document.getElementById('editArea').style.display = 'none';
+                currentEditTestId = ""; document.getElementById('editTestSelect').value = "";
+            });
+        }
+    } catch (e) { alert("❌ JSON Format Error!\n" + e.message); }
+}
+
+/* =========================================
+   🔥 JSON EXTRACTOR LOGIC
+   ========================================= */
+let masterData = [];
+
+function analyzeJson() {
+    const raw = document.getElementById('masterJson').value;
+    try {
+        masterData = JSON.parse(raw);
+        if (!Array.isArray(masterData)) throw new Error("Need a JSON Array [ ] !");
+        
+        let sections = new Set();
+        let topics = new Set();
+        
+        masterData.forEach(q => {
+            if (q.section) sections.add(q.section);
+            if (q.topic) topics.add(q.topic);
+        });
+
+        let secSelect = document.getElementById('selSection');
+        secSelect.innerHTML = '<option value="ALL">All Sections</option>';
+        Array.from(sections).sort().forEach(s => {
+            secSelect.innerHTML += `<option value="${s}">${s}</option>`;
+        });
+
+        let topSelect = document.getElementById('selTopic');
+        topSelect.innerHTML = '<option value="ALL">All Topics</option>';
+        Array.from(topics).sort().forEach(t => {
+            topSelect.innerHTML += `<option value="${t}">${t}</option>`;
+        });
+
+        document.getElementById('loadStats').innerText = `✅ Successfully loaded ${masterData.length} questions. Found ${sections.size} Sections & ${topics.size} Topics.`;
+        document.getElementById('filterControls').style.display = 'block';
+        document.getElementById('extractorResultBox').style.display = 'block';
+    } catch (e) {
+        alert("Invalid JSON format! Error: " + e.message);
+    }
+}
+
+function extractQuestions() {
+    const sec = document.getElementById('selSection').value;
+    const top = document.getElementById('selTopic').value;
+    const diff = document.getElementById('selDiff').value;
+    const limit = parseInt(document.getElementById('numLimit').value);
+
+    let filtered = masterData.filter(q => {
+        let matchSec = (sec === "ALL") || (q.section === sec);
+        let matchTop = (top === "ALL") || (q.topic === top);
+        let matchDiff = (diff === "ALL") || ((q.difficulty || "").toLowerCase() === diff);
+        return matchSec && matchTop && matchDiff;
+    });
+
+    filtered = filtered.sort(() => Math.random() - 0.5);
+
+    if (limit > 0 && limit < filtered.length) {
+        filtered = filtered.slice(0, limit);
+    }
+
+    document.getElementById('outputJson').value = JSON.stringify(filtered, null, 2);
+    document.getElementById('outStats').innerText = `🎯 Extracted ${filtered.length} matching questions!`;
+}
+
+function copyJSON() {
+    const out = document.getElementById('outputJson');
+    out.select();
+    document.execCommand('copy');
+    alert("📋 JSON Copied! Now you can paste it in the 'Bulk Upload Questions' box above.");
+}
+
+/* =========================================
+   OTHER UTILS (VIDEOS, NOTES, QOD)
+   ========================================= */
+function addPro() { 
+    const v = document.getElementById('proInput').value.trim(); 
+    if(!v) return alert("Please enter a Telegram ID!");
+    db.ref('dsssb_pro_users').push(v).then(() => { alert("✅ Pro Membership Added!"); document.getElementById('proInput').value = ""; }); 
+}
+
+function addVideo() { const url = document.getElementById('vUrl').value; const vidId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop(); const d = { title: document.getElementById('vTitle').value, url: url, thumb: document.getElementById('vThumb').value || `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`, type: document.getElementById('vType').value }; if(d.title) db.ref('dsssb_videos_db').push(d).then(() => alert("Video Added!")); }
+function addNote() { const d = { title: document.getElementById('nTitle').value, url: document.getElementById('nUrl').value, type: document.getElementById('nType').value }; if(d.title) db.ref('dsssb_notes_db').push(d).then(() => alert("Note Added!")); }
+function updateQOD() { const d = { q: document.getElementById('qodQ').value, opt: [document.getElementById('qodO1').value, document.getElementById('qodO2').value, document.getElementById('qodO3').value, document.getElementById('qodO4').value], ans: parseInt(document.getElementById('qodAns').value) }; if(d.q) db.ref('dsssb_config/qod').set(d).then(() => alert("QOD Updated!")); }
+function updateNews() { const txt = document.getElementById('newsInput').value; if(txt) db.ref('dsssb_config/news').set(txt).then(() => alert("News Updated!")); }
+function sendAlert() { const msg = document.getElementById('alertMsg').value; if(msg) db.ref('dsssb_config/alert').set({ msg: msg, time: Date.now() }).then(() => alert("Alert Sent!")); }
+function toggleMaintenance(s) { db.ref('dsssb_config/maintenance').set(s).then(() => alert("Mode: " + (s ? "LOCKED" : "UNLOCKED"))); }
+function resetLeaderboard() { if(confirm("Reset scores?")) db.ref('dsssb_results_live').remove().then(() => alert("Done!")); }
+
+function approve(key, uid) { if(confirm("Approve payment?")) { db.ref('dsssb_pro_users').push(String(uid).trim()); db.ref('dsssb_payment_requests/'+key).remove(); } }
+function reject(key) { if(confirm("Reject?")) db.ref('dsssb_payment_requests/'+key).remove(); }
+function delItem(p, isTest = false, tId = "") { 
+    if(confirm("Permanently delete this item?")) {
+        db.ref(p).remove();
+        if(isTest && tId) db.ref('dsssb_questions_db/' + tId).remove(); 
+    } 
+}
+function resolve(k) { db.ref('dsssb_reports/'+k).remove(); }
+</script>
+</body>
+</html>
