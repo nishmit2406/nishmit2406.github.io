@@ -257,6 +257,47 @@ textarea { height: 120px; resize: none; }
     .horizontal-3d-scroll, .filter-scroll { cursor: grab; }
     .horizontal-3d-scroll:active, .filter-scroll:active { cursor: grabbing; }
 }
+/* =========================================
+   📱 MOBILE OPTIMIZATION PATCH
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. Prevent Horizontal Scrolling (Screen se bahar jane se rokna) */
+    body, html { overflow-x: hidden !important; width: 100%; max-width: 100vw; }
+    
+    /* 2. Adjust Quick Actions Grid for small screens */
+    .quick-actions { gap: 8px; padding: 15px 10px 0; }
+    .action-item { padding: 10px 5px; }
+    .action-item span { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
+
+    /* 3. Adjust Stats Row */
+    .stats-row { gap: 8px; padding: 15px 10px; }
+    .stat-card { padding: 10px 5px; }
+    .stat-val { font-size: 16px; }
+
+    /* 4. 3D Folders Adjustments (Squish hone se bachana) */
+    .horizontal-3d-scroll { padding: 10px 10px 20px; gap: 10px; }
+    .horizontal-3d-scroll .folder-3d { min-width: 105px; } /* Thoda chota kiya mobile ke liye */
+    .folder-3d .f-body { padding: 15px 10px; }
+    .f-icon { font-size: 22px; margin-bottom: 8px; }
+    .f-name { font-size: 12px; }
+
+    /* 5. Target Exams Grid */
+    .target-exams-section { padding: 0 10px; }
+    .folder-3d-grid { gap: 12px 10px; }
+
+    /* 6. List Container & Search Box */
+    .list-container { padding: 0 10px; }
+    .search-box { padding: 10px 15px; margin-bottom: 12px; }
+    .filter-scroll { padding-bottom: 10px; gap: 8px; }
+    .filter-pill { padding: 8px 14px; font-size: 11px; }
+
+    /* 7. Notebook Banner Padding Fix */
+    .notebook-banner { margin: 0 10px 20px; padding: 12px 15px; }
+    .nb-icon-box { width: 30px; height: 30px; }
+
+    /* 8. Fix App Padding so it doesn't touch the very edges */
+    #app { padding-bottom: 80px; } 
+}  
 @media (min-width: 1024px) {
     body { padding-bottom: 0; display: flex; background: var(--bg-body); overflow-x: hidden; }
     
@@ -403,46 +444,9 @@ textarea { height: 120px; resize: none; }
             <button class="desk-scroll-btn left-btn" onclick="document.getElementById('catBox').scrollBy({left: -350, behavior: 'smooth'})"><i class="fas fa-chevron-left"></i></button>
             <button class="desk-scroll-btn right-btn" onclick="document.getElementById('catBox').scrollBy({left: 350, behavior: 'smooth'})"><i class="fas fa-chevron-right"></i></button>
             
-            <div class="horizontal-3d-scroll" id="catBox" style="margin: 0 5px;">
-                <div class="folder-3d f-live" onclick="openExamFolder('Live')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">🔴</span><span class="f-name">Live Tests</span></div>
-                </div>
-                <div class="folder-3d f-saved" onclick="openExamFolder('Saved')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">⭐</span><span class="f-name">Saved</span></div>
-                </div>
-                <div class="folder-3d f-attempt" onclick="openExamFolder('Attempted')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">✅</span><span class="f-name">Attempted</span></div>
-                </div>
-                <div class="folder-3d f-full" onclick="openExamFolder('Full Mock')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">📦</span><span class="f-name">Full Mocks</span></div>
-                </div>
-                <div class="folder-3d f-math" onclick="openExamFolder('Maths')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">🧮</span><span class="f-name">Maths</span></div>
-                </div>
-                <div class="folder-3d f-reas" onclick="openExamFolder('Reasoning')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">🧠</span><span class="f-name">Reasoning</span></div>
-                </div>
-                <div class="folder-3d f-eng" onclick="openExamFolder('English')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">🅰️</span><span class="f-name">English</span></div>
-                </div>
-                <div class="folder-3d f-hin" onclick="openExamFolder('Hindi')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">अ</span><span class="f-name">Hindi</span></div>
-                </div>
-                <div class="folder-3d f-gk" onclick="openExamFolder('GK')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">🌍</span><span class="f-name">Gen. GK</span></div>
-                </div>
-                <div class="folder-3d f-comp" onclick="openExamFolder('Computer')">
-                    <div class="f-tab"></div>
-                    <div class="f-body"><span class="f-icon">💻</span><span class="f-name">Computer</span></div>
+           <div class="horizontal-3d-scroll" id="catBox" style="margin: 0 5px;">
+                <div style="text-align:center; padding: 20px; color:var(--text-muted); width: 100%;">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading Folders...
                 </div>
             </div>
         </div>
@@ -512,18 +516,10 @@ textarea { height: 120px; resize: none; }
                 <button class="desk-scroll-btn left-btn" style="top: 40%; width: 34px; height: 34px; font-size: 14px;" onclick="document.getElementById('mockFiltersRow').scrollBy({left: -200, behavior: 'smooth'})"><i class="fas fa-chevron-left"></i></button>
                 <button class="desk-scroll-btn right-btn" style="top: 40%; width: 34px; height: 34px; font-size: 14px;" onclick="document.getElementById('mockFiltersRow').scrollBy({left: 200, behavior: 'smooth'})"><i class="fas fa-chevron-right"></i></button>
                 
-                <div class="filter-scroll" id="mockFiltersRow" style="margin-bottom: 0;">
+              <div class="filter-scroll" id="mockFiltersRow" style="margin-bottom: 0;">
                     <div class="filter-pill active" onclick="filterTests('all', this)">All Tests</div>
                     <div class="filter-pill" style="color:#ef4444;" onclick="filterTests('Live', this)">Live 🔴</div>
                     <div class="filter-pill" style="color:#f59e0b;" onclick="filterTests('Saved', this)">Saved ⭐</div>
-                    <div class="filter-pill" style="color:#10b981;" onclick="filterTests('Attempted', this)">Attempted ✅</div>
-                    <div class="filter-pill" onclick="filterTests('Full Mock', this)">Full Mock</div>
-                    <div class="filter-pill" onclick="filterTests('Reasoning', this)">Reasoning</div>
-                    <div class="filter-pill" onclick="filterTests('Maths', this)">Maths</div>
-                    <div class="filter-pill" onclick="filterTests('English', this)">English</div>
-                    <div class="filter-pill" onclick="filterTests('Hindi', this)">Hindi</div>
-                    <div class="filter-pill" onclick="filterTests('Computer', this)">Computer</div>
-                    <div class="filter-pill" onclick="filterTests('GK', this)">GK</div>
                 </div>
             </div>
             <div id="testListContainer" style="margin-top: 15px;"></div>
@@ -1333,9 +1329,12 @@ async function fetchData(user) {
         searchNotes(''); 
         renderVideos();
 
-        const testData = testsSnap.val() || {}; 
+       const testData = testsSnap.val() || {}; 
         allTests = Object.keys(testData).map(key => ({ dbKey: key, ...testData[key] }));
         filterTests('all', document.querySelector('.filter-pill.active'));
+
+        // 🔥 Dynamic Folder System Call
+        fetchDynamicFolders();
 
         if(document.getElementById('loader')) document.getElementById('loader').style.display = 'none'; 
         document.getElementById('app').style.display = 'block'; 
@@ -1720,6 +1719,141 @@ function openTestLeaderboard(testId, testTitle) {
         document.getElementById('testRankBody').innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Error fetching rank. Please try again.</td></tr>';
     });
 }
+// --- 🔥 NEW DYNAMIC 3D FOLDER ENGINE 🔥 ---
+let dynamicFolders = {};
+
+function fetchDynamicFolders() {
+    db.ref('dsssb_folders_tree').on('value', snap => {
+        if(snap.exists()) {
+            dynamicFolders = snap.val();
+            renderDynamicFolders();
+        } else {
+            console.log("No dynamic folders found in Firebase.");
+            document.getElementById('catBox').innerHTML = `<div style="text-align:center; padding: 20px; color:var(--text-muted); width: 100%;">No Folders Found</div>`;
+        }
+    });
+}
+
+function renderDynamicFolders() {
+    let html = `
+        <div class="folder-3d f-live" onclick="openExamFolder('Live')">
+            <div class="f-tab"></div>
+            <div class="f-body"><span class="f-icon">🔴</span><span class="f-name">Live Tests</span></div>
+        </div>
+        <div class="folder-3d f-saved" onclick="openExamFolder('Saved')">
+            <div class="f-tab"></div>
+            <div class="f-body"><span class="f-icon">⭐</span><span class="f-name">Saved</span></div>
+        </div>
+        <div class="folder-3d f-attempt" onclick="openExamFolder('Attempted')">
+            <div class="f-tab"></div>
+            <div class="f-body"><span class="f-icon">✅</span><span class="f-name">Attempted</span></div>
+        </div>
+    `;
+
+    let folders = Object.values(dynamicFolders).sort((a,b) => (a.order || 99) - (b.order || 99));
+
+    folders.forEach(f => {
+        let folderData = JSON.stringify(f).replace(/'/g, "&#39;"); 
+        html += `
+        <div class="folder-3d ${f.colorClass || 'f-blue'}" onclick='openTreeFolder(${folderData})'>
+            <div class="f-tab"></div>
+            <div class="f-body center">
+                <span class="f-icon">${f.icon || '📁'}</span>
+                <span class="f-name">${f.name || 'Folder'}</span>
+            </div>
+        </div>`;
+    });
+
+    document.getElementById('catBox').innerHTML = html;
+}
+
+function openTreeFolder(folderObj) {
+    const testTabIcon = document.querySelectorAll('.nav-item')[1];
+    switchTab('tests', testTabIcon);
+    document.getElementById('testSearch').value = ''; 
+
+    let filterHtml = `<div class="filter-pill active" onclick="filterDynamicTests('${folderObj.examKey}', 'all', this)">All ${folderObj.name}</div>`;
+    
+    if(folderObj.subCategories && folderObj.subCategories.length > 0) {
+        folderObj.subCategories.forEach(sub => {
+            filterHtml += `<div class="filter-pill" onclick="filterDynamicTests('${folderObj.examKey}', '${sub.filterKey}', this)">${sub.name}</div>`;
+        });
+    }
+
+    document.getElementById('mockFiltersRow').innerHTML = filterHtml;
+    filterDynamicTests(folderObj.examKey, 'all', document.querySelector('#mockFiltersRow .filter-pill.active'));
+    showToast(`Opened ${folderObj.name} 📂`);
+}
+
+function filterDynamicTests(examKey, subFilterKey, pillEl) {
+    if(pillEl) { 
+        document.querySelectorAll('#mockFiltersRow .filter-pill').forEach(p => p.classList.remove('active')); 
+        pillEl.classList.add('active'); 
+    }
+    
+    let list = [...allTests].reverse().filter(t => t.dbKey !== 'auto_qod');
+
+    if (examKey && examKey !== 'all') {
+        let targetExam = examKey.toLowerCase();
+        list = list.filter(t => (t.category||"").toLowerCase().includes(targetExam) || (t.title||"").toLowerCase().includes(targetExam));
+    }
+
+    if (subFilterKey && subFilterKey !== 'all') {
+        let targetSub = subFilterKey.toLowerCase();
+        list = list.filter(t => {
+            let cat = (t.category||"").toLowerCase();
+            let title = (t.title||"").toLowerCase();
+            if(targetSub === 'full') return cat.includes('full') || title.includes('full');
+            if(targetSub === 'sectional') return !(cat.includes('full') || title.includes('full'));
+            return cat.includes(targetSub) || title.includes(targetSub);
+        });
+    }
+
+    let html = "";
+    let savedTests = JSON.parse(getSafeData('savedTests') || '[]');
+
+    list.forEach(t => {
+        let locked = t.type === 'pro' && !isPro;
+        let isAttempted = attemptedTestIds.has(t.dbKey) || attemptedTestIds.has(t.id);
+        let isSaved = savedTests.includes(t.dbKey);
+        let liveHTML = ((t.isLive && t.isLive.toString() === 'true') || (t.scheduledTime && Date.now() >= t.scheduledTime)) ? '<div class="live-badge">🔴 LIVE NOW</div>' : '';
+        let pm = t.pm !== undefined ? parseFloat(t.pm) : 1;
+        let nm = t.nm !== undefined ? parseFloat(t.nm) : 0.25;
+        let isLocked = (t.lock === false || t.lock === "false") ? false : true;
+        let urlQuery = `testid=${t.dbKey}&title=${encodeURIComponent(t.title)}&time=${t.time||120}&pm=${pm}&nm=${nm}&lock=${isLocked}`;
+        
+        let buttonHTML = locked ? 
+            `<button class="start-btn locked" onclick="document.getElementById('paymentModal').style.display='flex'">Unlock Premium</button>` : 
+            isAttempted ? 
+            `<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:5px;">
+                <button class="start-btn" style="background:var(--bg-body); color:var(--text-main); border:1px solid var(--border); padding: 8px; font-size:12px;" onclick="reattemptTest('${t.dbKey}', '${urlQuery}&mode=exam')">🔄 Retake</button>
+                <button class="start-btn" style="background:var(--warning); color:#fff; border:none; padding: 8px; font-size:12px;" onclick="window.location.href='cbt.html?${urlQuery}&mode=quiz'">⚡ Quiz Mode</button>
+                <button class="start-btn" style="padding: 8px; background:#10b981; font-size:12px;" onclick="window.location.href='cbt.html?${urlQuery}&mode=solution'">👁️ Solutions</button>
+            </div>` : 
+            `<button class="start-btn" onclick="window.location.href='cbt.html?${urlQuery}&mode=exam'">Start Mock Test ➔</button>`;
+        
+        let viewRankBtn = `<button class="start-btn" style="background:var(--primary-light); color:var(--primary-dark); border:1px solid var(--primary); padding: 8px; font-size:13px; margin-top:8px; width:100%; box-shadow:none;" onclick="openTestLeaderboard('${t.dbKey}', '${(t.title||'').replace(/'/g, "\\'")}')">🏆 View Leaderboard</button>`;
+
+        html += `<div class="test-card ${locked?'locked':''}">
+                    ${liveHTML}
+                    <button class="save-btn ${isSaved?'saved':''}" onclick="toggleSaveTest('${t.dbKey}', this, event)">
+                        ${isSaved?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>'}
+                    </button>
+                    <div class="t-title">${t.title || 'PYQ Mock Test'}</div>
+                    <div class="t-info">
+                        <span><i class="fas fa-list-ol"></i> ${t.qs || '20'} Qs</span>
+                        <span><i class="far fa-clock"></i> ${t.time || '15'} Mins</span>
+                        <span><i class="fas fa-check-circle"></i> ${t.marks || t.qs || '20'} Marks</span>
+                    </div>
+                    ${buttonHTML}
+                    ${viewRankBtn}
+                </div>`;
+    });
+
+    document.getElementById('testListContainer').innerHTML = html || "<div style='text-align:center; color:var(--text-muted); padding:40px;'><i class='fas fa-box-open fa-3x' style='opacity:0.3; margin-bottom:10px;'></i><br>No tests found in this category.</div>";
+}
+// ------------------------------------------
+
 // 🔥 MOUSE DRAG TO SCROLL (LIKE MOBILE SWIPE ON PC FOR MULTIPLE SECTIONS) 🔥
 document.addEventListener('DOMContentLoaded', () => {
     const sliders = [document.getElementById('catBox'), document.getElementById('mockFiltersRow')];
