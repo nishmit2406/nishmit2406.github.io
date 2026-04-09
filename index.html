@@ -1424,21 +1424,37 @@ function filterTests(cat, el, searchQuery = "") {
         else if(q === 'comp') q = 'computer';
         else if(q === 'hin') q = 'hindi';
         
-        list = list.filter(t => (t.title||"").toLowerCase().includes(q) || (t.category||"").toLowerCase().includes(q) || (t.title||"").toLowerCase().includes(searchQuery.toLowerCase())); 
+        list = list.filter(t => 
+            (t.title||"").toLowerCase().includes(q) || 
+            (t.category||"").toLowerCase().includes(q) || 
+            (t.tag||"").toLowerCase().includes(q) || 
+            (t.tags||"").toLowerCase().includes(q) || 
+            (t.title||"").toLowerCase().includes(searchQuery.toLowerCase())
+        ); 
     } else if(cat && cat.toLowerCase() !== 'all tests' && cat.toLowerCase() !== 'all') {
         const key = cat.toLowerCase();
         if(key.includes('saved')) list = list.filter(t => savedTests.includes(t.dbKey));
-        else if (key.includes('live')) list = list.filter(t => (t.isLive && t.isLive.toString() === 'true') || (t.scheduledTime && Date.now() >= t.scheduledTime));
+        // 🔥 LIVE FILTER FIX: Now it also checks category, tag, and tags arrays/strings
+        else if (key.includes('live')) {
+            list = list.filter(t => 
+                (t.isLive && t.isLive.toString() === 'true') || 
+                (t.scheduledTime && Date.now() >= t.scheduledTime) ||
+                (t.category && t.category.toLowerCase().includes('live')) ||
+                (t.tag && t.tag.toLowerCase().includes('live')) ||
+                (t.tags && t.tags.toLowerCase().includes('live'))
+            );
+        }
         else if (key.includes('attempted')) list = list.filter(t => attemptedTestIds.has(t.dbKey) || attemptedTestIds.has(t.id));
         else list = list.filter(t => { 
             const title = (t.title||"").toLowerCase(), c = (t.category||"").toLowerCase(); 
-            if(key.includes('reasoning')) return title.includes('reas') || title.includes('logic') || c.includes('reas');
-            if(key.includes('maths')) return title.includes('math') || title.includes('quant') || c.includes('math');
-            if(key.includes('english')) return title.includes('eng') || c.includes('eng');
-            if(key.includes('hindi')) return title.includes('hin') || c.includes('hin');
-            if(key.includes('computer')) return title.includes('comp') || c.includes('comp');
-            if(key.includes('gk')) return title.includes('gk') || title.includes('general') || c.includes('gk');
-            return title.includes(key) || c.includes(key); 
+            const tags = (t.tag||"").toLowerCase() + " " + (t.tags||"").toLowerCase();
+            if(key.includes('reasoning')) return title.includes('reas') || title.includes('logic') || c.includes('reas') || tags.includes('reas');
+            if(key.includes('maths')) return title.includes('math') || title.includes('quant') || c.includes('math') || tags.includes('math');
+            if(key.includes('english')) return title.includes('eng') || c.includes('eng') || tags.includes('eng');
+            if(key.includes('hindi')) return title.includes('hin') || c.includes('hin') || tags.includes('hin');
+            if(key.includes('computer')) return title.includes('comp') || c.includes('comp') || tags.includes('comp');
+            if(key.includes('gk')) return title.includes('gk') || title.includes('general') || c.includes('gk') || tags.includes('gk');
+            return title.includes(key) || c.includes(key) || tags.includes(key); 
         });
     }
     
@@ -1449,7 +1465,15 @@ function filterTests(cat, el, searchQuery = "") {
         let locked = t.type === 'pro' && !isPro;
         let isAttempted = attemptedTestIds.has(t.dbKey) || attemptedTestIds.has(t.id);
         let isSaved = savedTests.includes(t.dbKey);
-        let liveHTML = ((t.isLive && t.isLive.toString() === 'true') || (t.scheduledTime && Date.now() >= t.scheduledTime)) ? '<div class="live-badge">🔴 LIVE NOW</div>' : '';
+        
+        // 🔥 LIVE BADGE FIX: Show badge if category/tags contains "live"
+        let isActuallyLive = (t.isLive && t.isLive.toString() === 'true') || 
+                             (t.scheduledTime && Date.now() >= t.scheduledTime) ||
+                             (t.category && t.category.toLowerCase().includes('live')) ||
+                             (t.tag && t.tag.toLowerCase().includes('live')) ||
+                             (t.tags && t.tags.toLowerCase().includes('live'));
+                             
+        let liveHTML = isActuallyLive ? '<div class="live-badge">🔴 LIVE NOW</div>' : '';
         
         let pm = t.pm !== undefined ? parseFloat(t.pm) : 1;
         let nm = t.nm !== undefined ? parseFloat(t.nm) : 0.25;
@@ -1467,7 +1491,6 @@ function filterTests(cat, el, searchQuery = "") {
             </div>` : 
             `<button class="start-btn" onclick="window.location.href='cbt.html?${urlQuery}&mode=exam'">Start Mock Test ➔</button>`;
         
-        // NEW LEADERBOARD BUTTON
         let viewRankBtn = `<button class="start-btn" style="background:var(--primary-light); color:var(--primary-dark); border:1px solid var(--primary); padding: 8px; font-size:13px; margin-top:8px; width:100%; box-shadow:none;" onclick="openTestLeaderboard('${t.dbKey}', '${(t.title||'').replace(/'/g, "\\'")}')">🏆 View Leaderboard</button>`;
 
         return `<div class="test-card ${locked?'locked':''}">
@@ -1486,7 +1509,6 @@ function filterTests(cat, el, searchQuery = "") {
                 </div>`;
     };
 
-    // LOGIC TO DIVIDE INTO SECTIONS (If specific exam is searched)
     if (searchQuery && list.length > 0) {
         let fullMocks = list.filter(t => (t.category || "").toLowerCase().includes('full') || (t.title || "").toLowerCase().includes('full'));
         let sectionalMocks = list.filter(t => !(t.category || "").toLowerCase().includes('full') && !(t.title || "").toLowerCase().includes('full'));
@@ -1500,7 +1522,6 @@ function filterTests(cat, el, searchQuery = "") {
             sectionalMocks.forEach(t => html += generateCardHTML(t));
         }
     } else {
-        // Standard Flat List
         list.forEach(t => html += generateCardHTML(t));
     }
 
@@ -1816,7 +1837,16 @@ function filterDynamicTests(examKey, subFilterKey, pillEl) {
         let locked = t.type === 'pro' && !isPro;
         let isAttempted = attemptedTestIds.has(t.dbKey) || attemptedTestIds.has(t.id);
         let isSaved = savedTests.includes(t.dbKey);
-        let liveHTML = ((t.isLive && t.isLive.toString() === 'true') || (t.scheduledTime && Date.now() >= t.scheduledTime)) ? '<div class="live-badge">🔴 LIVE NOW</div>' : '';
+        
+        // 🔥 LIVE BADGE FIX DYNAMIC
+        let isActuallyLive = (t.isLive && t.isLive.toString() === 'true') || 
+                             (t.scheduledTime && Date.now() >= t.scheduledTime) ||
+                             (t.category && t.category.toLowerCase().includes('live')) ||
+                             (t.tag && t.tag.toLowerCase().includes('live')) ||
+                             (t.tags && t.tags.toLowerCase().includes('live'));
+                             
+        let liveHTML = isActuallyLive ? '<div class="live-badge">🔴 LIVE NOW</div>' : '';
+        
         let pm = t.pm !== undefined ? parseFloat(t.pm) : 1;
         let nm = t.nm !== undefined ? parseFloat(t.nm) : 0.25;
         let isLocked = (t.lock === false || t.lock === "false") ? false : true;
@@ -1852,7 +1882,6 @@ function filterDynamicTests(examKey, subFilterKey, pillEl) {
 
     document.getElementById('testListContainer').innerHTML = html || "<div style='text-align:center; color:var(--text-muted); padding:40px;'><i class='fas fa-box-open fa-3x' style='opacity:0.3; margin-bottom:10px;'></i><br>No tests found in this category.</div>";
 }
-// ------------------------------------------
 
 // 🔥 MOUSE DRAG TO SCROLL (LIKE MOBILE SWIPE ON PC FOR MULTIPLE SECTIONS) 🔥
 document.addEventListener('DOMContentLoaded', () => {
