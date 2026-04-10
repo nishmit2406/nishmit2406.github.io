@@ -86,6 +86,9 @@
 <div class="sidebar">
     <div class="brand"><i class="fas fa-bolt"></i> <span>DSSSB Admin</span></div>
     <div class="menu-item active" onclick="showSec('dashboard', this)"><i class="fas fa-chart-pie"></i> Overview</div>
+    
+    <div class="menu-item" onclick="showSec('liveTyping', this)"><i class="fas fa-globe"></i> Global Arena</div>
+    
     <div class="menu-item" onclick="showSec('payments', this)"><i class="fas fa-rupee-sign"></i> Payments</div>
     <div class="menu-item" onclick="showSec('content', this)"><i class="fas fa-layer-group"></i> Manage Content</div>
     <div class="menu-item" onclick="showSec('folders', this)"><i class="fas fa-folder-open"></i> Manage Folders</div>
@@ -112,6 +115,55 @@
         </div>
         <div class="table-box">
             <table><thead><tr><th>Recent Activity</th><th>Details</th><th>Time</th></tr></thead><tbody id="recentTable"></tbody></table>
+        </div>
+    </div>
+
+    <div id="liveTyping" class="section">
+        <div class="header"><h2>🎮 Global Auto-Arena (Live Battle)</h2></div>
+        
+        <div class="grid-2">
+            <div class="form-box" style="border:2px solid #8b5cf6; background: #faf5ff;">
+                <div class="form-title" style="color:#8b5cf6;"><i class="fas fa-globe"></i> 1. Setup Global Arena</div>
+                <p style="color:grey; font-size:12px; margin-bottom:10px;">Select a passage and open the waiting lobby globally.</p>
+                
+                <input type="text" id="arenaTitle" placeholder="Arena Title (e.g., Sunday Mega Battle)" style="margin-bottom:10px; border-color:#8b5cf6;">
+                
+              <select id="arenaPassageSelect" style="margin-bottom:10px; border-color:#8b5cf6;">
+                    <option value="">-- Loading Typing Passages... --</option>
+                </select>
+                
+                <input type="number" id="arenaWaitTime" placeholder="Wait Time in Seconds (e.g. 60)" value="60" style="margin-bottom:10px; border-color:#8b5cf6; font-weight:bold;">
+                
+                <button id="btnOpenArena" onclick="openGlobalArena()" style="background:#8b5cf6; width:100%; font-size:15px;"><i class="fas fa-door-open"></i> Open Arena & Start Countdown</button>
+            </div>
+
+            <div class="form-box" style="border:2px solid #f59e0b; background: #fffbeb;">
+                <div class="form-title" style="color:#d97706;"><i class="fas fa-broadcast-tower"></i> 2. Arena Status</div>
+                
+                <div style="text-align:center; padding: 10px;">
+                    <h1 id="arenaTimerDisplay" style="font-size: 40px; color: #f59e0b; margin-bottom: 5px;">00:00</h1>
+                    <span id="arenaStatusBadge" class="badge-offline" style="font-size: 14px;">Offline</span>
+                </div>
+
+                <button onclick="forceEndArena()" style="background:#ef4444; width:100%; margin-top: 15px;"><i class="fas fa-stop-circle"></i> Force Close Arena</button>
+            </div>
+        </div>
+
+        <h3 style="margin-top:20px; margin-bottom:10px;">🏆 Connected Students & Live Progress</h3>
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Live WPM</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="arenaTableBody">
+                    <tr><td colspan="4" style="text-align:center; padding:20px; color:grey;">Arena is closed. Open to see students...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -242,11 +294,15 @@
                 <button onclick="addNote()" style="background:#10b981; width:100%;"><i class="fas fa-plus"></i> Add Note</button>
             </div>
         </div>
-
+        
         <div class="form-box" style="margin-top:20px; border:2px solid #eab308; background: #fefce8;">
             <div class="form-title" style="color:#ca8a04;"><i class="fas fa-keyboard"></i> Add Typing Simulator Passage</div>
             <p style="color:grey; font-size:12px; margin-bottom:10px;">Yahan typing test ke liye English ya Hindi passage add karein.</p>
             <input type="text" id="typePassageTitle" placeholder="Enter Test Title (e.g., DSSSB LDC Mock 1)" style="margin-bottom:10px; border-color:#eab308;">
+            <select id="typePassageType" style="margin-bottom:10px; border-color:#eab308;">
+                <option value="free">🟢 Free Passage</option>
+                <option value="pro">👑 Pro Passage</option>
+            </select>
             <textarea id="typePassageText" placeholder="Paste the exact English/Hindi paragraph here..." style="height:120px; font-size:14px; border-color:#eab308; margin-bottom:10px;"></textarea>
             <button onclick="saveTypingPassage()" style="background:#eab308; width:100%;"><i class="fas fa-upload"></i> Upload Typing Passage</button>
         </div>
@@ -254,39 +310,6 @@
         <h3 style="margin-top:20px; margin-bottom:10px;">Manage All Content (Edit / Delete)</h3>
         <div class="table-box">
             <table><thead><tr><th>Type</th><th>Title</th><th>Action</th></tr></thead><tbody id="contentTable"></tbody></table>
-        </div>
-    </div>
-
-    <div id="folders" class="section">
-        <div class="header"><h2>📂 Manage Exam Folders (3D System)</h2></div>
-        
-        <div class="form-box" style="border:2px solid var(--primary); background: #f5f3ff;">
-            <div class="form-title" style="color:var(--primary);"><i class="fas fa-plus-circle"></i> Create New Exam Folder</div>
-            <div class="grid-2">
-                <input type="text" id="fName" placeholder="Exam Name (e.g. SSC CGL 2024)">
-                <input type="text" id="fKey" placeholder="Exam Key (Unique, e.g. ssc_cgl)">
-                <input type="text" id="fIcon" placeholder="Emoji Icon (e.g. 🏛️)">
-                <select id="fColor">
-                    <option value="f-blue">Blue (Standard)</option>
-                    <option value="f-purple">Purple (Special)</option>
-                    <option value="f-green">Green (Success)</option>
-                    <option value="f-live">Red (Live/Alert)</option>
-                    <option value="f-math">Deep Blue (Maths)</option>
-                    <option value="f-reas">Violet (Reasoning)</option>
-                </select>
-                <input type="number" id="fOrder" placeholder="Display Order (1, 2, 3...)">
-                <input type="text" id="fSubs" placeholder="Sub-Categories (Comma separated: Full Mock,Maths,GK)">
-            </div>
-            <p style="font-size:11px; color:grey; margin-bottom:10px;"><b>Note:</b> Sub-categories ko comma (,) se alag karein. System automatic filter buttons bana dega.</p>
-            <button onclick="addExamFolder()" style="width:100%;"><i class="fas fa-save"></i> Save Folder to Dashboard</button>
-        </div>
-
-        <h3 style="margin-bottom:10px;">Active 3D Folders</h3>
-        <div class="table-box">
-            <table>
-                <thead><tr><th>Icon</th><th>Folder Name</th><th>Key & Subs</th><th>Action</th></tr></thead>
-                <tbody id="folderTableBody"></tbody>
-            </table>
         </div>
     </div>
 
@@ -347,26 +370,28 @@
         </div>
 
         <div class="grid-2">
-            <div class="form-box" style="border:2px solid #f97316;">
-                <div class="form-title" style="color:#f97316;">💡 Question of the Day</div>
-                <textarea id="qodQ" placeholder="Question..." style="height:50px; margin-bottom:10px;"></textarea>
+            <div class="form-box" style="border:2px solid #f97316; background: #fff7ed;">
+                <div class="form-title" style="color:#f97316;">💡 Question of the Day (Single & CBT Bulk)</div>
+                
+                <p style="color:grey; font-size:12px; margin-bottom:10px;"><b>Method 1:</b> Update Single QOD</p>
+                <textarea id="qodQ" placeholder="Question..." style="height:50px; margin-bottom:10px; border-color:#fdba74;"></textarea>
                 <div class="grid-2" style="margin-bottom:0;"><input type="text" id="qodO1" placeholder="Op1"><input type="text" id="qodO2" placeholder="Op2"></div>
                 <div class="grid-2"><input type="text" id="qodO3" placeholder="Op3"><input type="text" id="qodO4" placeholder="Op4"></div>
-                <select id="qodAns" style="margin-bottom:10px;"><option value="0">Ans: 1</option><option value="1">Ans: 2</option><option value="2">Ans: 3</option><option value="3">Ans: 4</option></select>
-                <button onclick="updateQOD()" style="background:#f97316; width:100%;"><i class="fas fa-sync"></i> Update QOD</button>
+                <select id="qodAns" style="margin-bottom:10px; border-color:#fdba74;"><option value="0">Ans: 1</option><option value="1">Ans: 2</option><option value="2">Ans: 3</option><option value="3">Ans: 4</option></select>
+                <button onclick="updateQOD()" style="background:#f97316; width:100%; margin-bottom:15px;"><i class="fas fa-sync"></i> Update Single QOD</button>
+                
+                <hr style="border: 0; border-top: 1px dashed #f97316; margin-bottom: 15px;">
+
+                <p style="color:grey; font-size:12px; margin-bottom:10px;"><b>Method 2:</b> Bulk Upload (CBT JSON v4.0 Array)</p>
+                <textarea id="qodBulkJSON" placeholder='[{"section": "GK", "topic": "Polity", "level": "Easy", "q_en": "...", "q_hi": "...", "op_en": ["A", "B", "C", "D"], "op_hi": ["A", "B", "C", "D"], "ans": "1", "solution": "<p>...</p>"}]' style="height:120px; font-family:monospace; font-size:12px; border-color:#f97316; margin-bottom:10px;"></textarea>
+                <button onclick="bulkUploadQOD()" style="background:#ea580c; width:100%;"><i class="fas fa-database"></i> Upload CBT JSON to QOD Bank</button>
             </div>
-          <div class="form-box">
+            
+            <div class="form-box">
                 <div class="form-title">📰 Update News Ticker</div>
                 <input type="text" id="newsInput" placeholder="Announcement text..." style="margin-bottom:10px;">
                 <button onclick="updateNews()" style="width:100%;"><i class="fas fa-bullhorn"></i> Update News</button>
             </div>
-        </div>
-
-        <div class="form-box" style="border:2px solid #8b5cf6; background: #faf5ff;">
-            <div class="form-title" style="color:#8b5cf6;">📅 Auto-QOD Bulk Upload (JSON)</div>
-            <p style="color:grey; font-size:12px; margin-bottom:10px;">Yahan ek JSON array paste karein jisme bahut saare questions hon. App daily ek question automatically rotate karega (Date ke hisaab se)!</p>
-            <textarea id="autoQodJSON" placeholder="Paste your JSON array here like: [ { q_en: '...', ans: '1', ... } ]" style="height:120px; font-family:monospace; font-size:12px; border-color:#8b5cf6; margin-bottom:10px;"></textarea>
-            <button onclick="uploadAutoQOD()" style="background:#8b5cf6; width:100%;"><i class="fas fa-calendar-check"></i> Upload Auto-QOD Series</button>
         </div>
     </div>
 
@@ -413,7 +438,39 @@
             </div>
         </div>
     </div>
+    
+    <div id="folders" class="section">
+        <div class="header"><h2>📂 Manage Exam Folders (3D System)</h2></div>
+        
+        <div class="form-box" style="border:2px solid var(--primary); background: #f5f3ff;">
+            <div class="form-title" style="color:var(--primary);"><i class="fas fa-plus-circle"></i> Create New Exam Folder</div>
+            <div class="grid-2">
+                <input type="text" id="fName" placeholder="Exam Name (e.g. SSC CGL 2024)">
+                <input type="text" id="fKey" placeholder="Exam Key (Unique, e.g. ssc_cgl)">
+                <input type="text" id="fIcon" placeholder="Emoji Icon (e.g. 🏛️)">
+                <select id="fColor">
+                    <option value="f-blue">Blue (Standard)</option>
+                    <option value="f-purple">Purple (Special)</option>
+                    <option value="f-green">Green (Success)</option>
+                    <option value="f-live">Red (Live/Alert)</option>
+                    <option value="f-math">Deep Blue (Maths)</option>
+                    <option value="f-reas">Violet (Reasoning)</option>
+                </select>
+                <input type="number" id="fOrder" placeholder="Display Order (1, 2, 3...)">
+                <input type="text" id="fSubs" placeholder="Sub-Categories (Comma separated: Full Mock,Maths,GK)">
+            </div>
+            <p style="font-size:11px; color:grey; margin-bottom:10px;"><b>Note:</b> Sub-categories ko comma (,) se alag karein. System automatic filter buttons bana dega.</p>
+            <button onclick="addExamFolder()" style="width:100%;"><i class="fas fa-save"></i> Save Folder to Dashboard</button>
+        </div>
 
+        <h3 style="margin-bottom:10px;">Active 3D Folders</h3>
+        <div class="table-box">
+            <table>
+                <thead><tr><th>Icon</th><th>Folder Name</th><th>Key & Subs</th><th>Action</th></tr></thead>
+                <tbody id="folderTableBody"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <div id="editTestModal" class="modal-overlay">
@@ -469,7 +526,14 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const storage = firebase.storage();
 
-// NEW: Added typing to contentCache
+// 🔥 NEW: FIREBASE SERVER TIME SYNC 🔥
+let serverTimeOffset = 0;
+db.ref(".info/serverTimeOffset").on("value", function(snap) {
+    serverTimeOffset = snap.val() || 0;
+});
+function getSyncedTime() { return Date.now() + serverTimeOffset; }
+
+// 🔥 UPGRADED CACHE: added typing passages
 let contentCache = { tests: {}, videos: {}, notes: {}, typing: {} };
 let userMap = {}; 
 let proUsersSnap = null; 
@@ -585,7 +649,6 @@ function loadData() {
         document.getElementById('statLive').innerText = onlineCount;
 
         users.forEach(u => {
-            // Activity color coding
             let actColor = "var(--primary)";
             let actIcon = "fa-location-arrow";
             
@@ -631,11 +694,10 @@ function loadData() {
         renderContentTable();
     });
     
-    // 6. Videos, Notes & Typing Passages
+    // 6. Videos & Notes
     db.ref('dsssb_videos_db').on('value', s => { contentCache.videos = s.val() || {}; renderContentTable(); });
     db.ref('dsssb_notes_db').on('value', s => { contentCache.notes = s.val() || {}; renderContentTable(); });
-    db.ref('typing_passages').on('value', s => { contentCache.typing = s.val() || {}; renderContentTable(); });
-
+    
     // 📂 7. Dynamic Folders Tree Loading
     db.ref('dsssb_folders_tree').on('value', snap => {
         const tbody = document.getElementById('folderTableBody');
@@ -667,10 +729,161 @@ function loadData() {
             </tr>`;
         });
     });
+
+    // 🔥 NEW: LOAD TYPING PASSAGES FOR CACHE AND ARENA 🔥
+    db.ref('typing_passages').on('value', snap => {
+        contentCache.typing = snap.val() || {};
+        renderContentTable(); // Update the main content table
+        
+        const sel = document.getElementById('arenaPassageSelect');
+        if(sel) {
+            sel.innerHTML = '<option value="">-- Select Typing Passage --</option>';
+            snap.forEach(child => {
+                sel.innerHTML += `<option value="${child.key}">${child.val().title}</option>`;
+            });
+        }
+    });
+
+    // 🔥 NEW: LISTEN TO GLOBAL ARENA STATUS Real-time 🔥
+    db.ref('dsssb_global_arena').on('value', snap => {
+        if(!snap.exists()) return;
+        
+        const arena = snap.val();
+        const badge = document.getElementById('arenaStatusBadge');
+        if(!badge) return;
+        
+        // Update Badge
+        if(arena.status === 'waiting') {
+            badge.innerHTML = "🟡 WAITING FOR STUDENTS...";
+            badge.style.background = "#fef3c7"; badge.style.color = "#d97706";
+            startAdminTimerUI(arena.startTime);
+        } 
+        else if(arena.status === 'live') {
+            badge.innerHTML = "🔴 LIVE TYPING BATTLE ONGOING!";
+            badge.style.background = "#fee2e2"; badge.style.color = "#ef4444";
+            document.getElementById('arenaTimerDisplay').innerText = "LIVE!";
+            clearInterval(arenaInterval);
+        } 
+        else {
+            badge.innerHTML = "⚪ ARENA CLOSED";
+            badge.style.background = "#f1f5f9"; badge.style.color = "#64748b";
+            document.getElementById('arenaTimerDisplay').innerText = "00:00";
+            clearInterval(arenaInterval);
+        }
+
+        renderArenaParticipants(arena.participants || {});
+    });
 }
 
 /* =========================================
-   PRO USERS RENDERING LOGIC
+   🔥 GLOBAL AUTO-ARENA LOGIC 🔥
+   ========================================= */
+let arenaInterval = null;
+
+function openGlobalArena() {
+    const title = document.getElementById('arenaTitle').value.trim();
+    const passageId = document.getElementById('arenaPassageSelect').value;
+    const waitTimeSec = parseInt(document.getElementById('arenaWaitTime').value) || 60; // Admin input time
+
+    if(!title || !passageId) return alert("⚠️ Title aur Passage select karna zaroori hai!");
+
+    if(confirm(`Start ${waitTimeSec}-Second Window? All online students will be able to join!`)) {
+        const futureStartTime = getSyncedTime() + (waitTimeSec * 1000); // Dynamic Time
+
+        const arenaData = {
+            title: title,
+            passageId: passageId,
+            status: 'waiting', 
+            startTime: futureStartTime,
+            participants: {
+                "system_init": { name: "System Admin", progress: 0, wpm: 0, status: "waiting" }
+            }
+        };
+
+        db.ref('dsssb_global_arena').set(arenaData).then(() => {
+            alert(`🚀 Arena Opened! ${waitTimeSec}-Second countdown started.`);
+            
+            // Server-side automatic transition to 'live'
+            setTimeout(() => {
+                db.ref('dsssb_global_arena/status').once('value').then(snap => {
+                    if(snap.val() === 'waiting') {
+                        db.ref('dsssb_global_arena/status').set('live');
+                    }
+                });
+            }, waitTimeSec * 1000); 
+        }).catch(error => {
+            alert("❌ Firebase Error: " + error.message);
+            console.error("Firebase Error:", error);
+        });
+    }
+}
+
+function startAdminTimerUI(futureTime) {
+    clearInterval(arenaInterval);
+    const display = document.getElementById('arenaTimerDisplay');
+    
+    arenaInterval = setInterval(() => {
+        let timeLeft = Math.ceil((futureTime - getSyncedTime()) / 1000); // 🔥 USING SYNCED TIME
+        
+        if(timeLeft <= 0) {
+            display.innerText = "START!";
+            clearInterval(arenaInterval);
+        } else {
+            let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            let s = (timeLeft % 60).toString().padStart(2, '0');
+            display.innerText = m + ":" + s; // 🔥 PROPER MM:SS FORMAT
+        }
+    }, 1000);
+}
+
+function forceEndArena() {
+    if(confirm("Force Close this Arena session?")) {
+        db.ref('dsssb_global_arena').update({ status: 'closed' }).then(() => {
+            alert("🛑 Arena closed successfully.");
+        });
+    }
+}
+
+function renderArenaParticipants(participantsObj) {
+    const tbody = document.getElementById('arenaTableBody');
+    if(!tbody) return;
+    
+    let participants = [];
+    
+    Object.entries(participantsObj).forEach(([uid, data]) => {
+        participants.push({ uid: uid, ...data });
+    });
+
+    // Sort by progress/WPM (Highest first)
+    participants.sort((a, b) => (b.progress || 0) - (a.progress || 0));
+
+    if(participants.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:grey;">Waiting for students to join...</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    participants.forEach(p => {
+        let progColor = p.progress >= 100 ? '#10b981' : '#8b5cf6'; // Green if done, Purple if active
+        
+        tbody.innerHTML += `<tr>
+            <td><b style="font-size:15px;">${p.name || 'Student'}</b><br><small style="color:grey;">ID: ${p.uid}</small></td>
+            <td style="color:#f59e0b; font-weight:bold; font-size:18px;">${p.wpm || 0} WPM</td>
+            <td>
+                <div style="background:#e2e8f0; border-radius:10px; height:10px; width:100%; overflow:hidden;">
+                    <div style="background:${progColor}; height:100%; width:${p.progress || 0}%; transition: width 0.3s;"></div>
+                </div>
+                <small style="font-weight:bold; color:grey;">${Math.floor(p.progress || 0)}%</small>
+            </td>
+            <td>
+                ${p.status === 'finished' ? '<span class="badge-online">Completed</span>' : '<span style="color:#8b5cf6; font-weight:bold;"><i class="fas fa-keyboard"></i> In Arena</span>'}
+            </td>
+        </tr>`;
+    });
+}
+
+/* =========================================
+   PRO USERS RENDERING LOGIC (WITH REAL NAMES)
    ========================================= */
 function renderProUsersTable() {
     const tbody = document.getElementById('proUsersTableBody');
@@ -720,9 +933,9 @@ function renderContentTable() {
     const tbody = document.getElementById('contentTable'); 
     let html = '';
     
-    // Tests
-    Object.entries(contentCache.tests).reverse().forEach(([k,v]) => {
+    Object.entries(contentCache.tests || {}).reverse().forEach(([k,v]) => {
         let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
+        
         let liveStatus = '⚪ Normal';
         if (v.status === 'scheduled' || v.scheduledTime) liveStatus = '⏰ ' + new Date(v.scheduledTime).toLocaleString();
         else if (v.isLive === 'true' || v.isLive === true || v.status === 'true') liveStatus = '🔴 LIVE';
@@ -737,8 +950,7 @@ function renderContentTable() {
         </tr>`;
     });
     
-    // Videos
-    Object.entries(contentCache.videos).reverse().forEach(([k,v]) => {
+    Object.entries(contentCache.videos || {}).reverse().forEach(([k,v]) => {
         let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
         html += `<tr>
             <td><span style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">Video</span></td>
@@ -747,8 +959,7 @@ function renderContentTable() {
         </tr>`;
     });
     
-    // Notes
-    Object.entries(contentCache.notes).reverse().forEach(([k,v]) => {
+    Object.entries(contentCache.notes || {}).reverse().forEach(([k,v]) => {
         let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
         html += `<tr>
             <td><span style="background:#d1fae5; color:#059669; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">Note</span></td>
@@ -757,16 +968,43 @@ function renderContentTable() {
         </tr>`;
     });
 
-    // NEW: Typing Passages
-    Object.entries(contentCache.typing).reverse().forEach(([k,v]) => {
+    // 🔥 NEW: Rendering Typing Passages
+    Object.entries(contentCache.typing || {}).reverse().forEach(([k,v]) => {
+        let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
         html += `<tr>
             <td><span style="background:#fef9c3; color:#ca8a04; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">Typing</span></td>
-            <td><b>${v.title}</b> <br><span style="font-size:11px; color:grey; font-weight:600;">ID: ${k}</span></td>
+            <td><b>${v.title}</b> <br><span style="font-size:11px; color:grey; font-weight:600;">ID: ${k} &bull; ${badge}</span></td>
             <td><button class="btn-del" onclick="delItem('typing_passages/${k}', false)"><i class="fas fa-trash"></i> Delete</button></td>
         </tr>`;
     });
     
     tbody.innerHTML = html;
+}
+
+/* =========================================
+   🔥 NEW TYPING PASSAGE SAVE LOGIC 🔥
+   ========================================= */
+function saveTypingPassage() {
+    const title = document.getElementById('typePassageTitle').value.trim();
+    const content = document.getElementById('typePassageText').value.trim();
+    const pType = document.getElementById('typePassageType').value; 
+    
+    if(!title || !content) return alert("⚠️ Please enter both Title and Passage Text!");
+    
+    if(confirm(`Are you sure you want to add this as a ${pType.toUpperCase()} typing passage?`)) {
+        db.ref("typing_passages").push({
+            title: title, 
+            content: content, 
+            type: pType, 
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            alert("✅ Typing Passage Added Successfully!");
+            document.getElementById('typePassageTitle').value = "";
+            document.getElementById('typePassageText').value = "";
+        }).catch(err => {
+            alert("❌ Error: " + err.message);
+        });
+    }
 }
 
 /* =========================================
@@ -1029,30 +1267,6 @@ function updateTestJSON() {
 }
 
 /* =========================================
-   🔥 TYPING PASSAGE LOGIC
-   ========================================= */
-function saveTypingPassage() {
-    const title = document.getElementById('typePassageTitle').value.trim();
-    const content = document.getElementById('typePassageText').value.trim();
-    
-    if(!title || !content) return alert("⚠️ Please enter both Title and Passage Text!");
-    
-    if(confirm("Are you sure you want to add this typing passage?")) {
-        db.ref("typing_passages").push({
-            title: title, 
-            content: content, 
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-            alert("✅ Typing Passage Added Successfully!");
-            document.getElementById('typePassageTitle').value = "";
-            document.getElementById('typePassageText').value = "";
-        }).catch(err => {
-            alert("❌ Error: " + err.message);
-        });
-    }
-}
-
-/* =========================================
    🔥 JSON EXTRACTOR LOGIC
    ========================================= */
 let masterData = [];
@@ -1122,7 +1336,7 @@ function copyJSON() {
 }
 
 /* =========================================
-   OTHER UTILS (VIDEOS, NOTES, QOD, FOLDERS)
+   OTHER UTILS (VIDEOS, NOTES, QOD)
    ========================================= */
 function addPro() { 
     const v = document.getElementById('proInput').value.trim(); 
@@ -1132,20 +1346,49 @@ function addPro() {
 
 function addVideo() { const url = document.getElementById('vUrl').value; const vidId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop(); const d = { title: document.getElementById('vTitle').value, url: url, thumb: document.getElementById('vThumb').value || `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`, type: document.getElementById('vType').value }; if(d.title) db.ref('dsssb_videos_db').push(d).then(() => alert("Video Added!")); }
 function addNote() { const d = { title: document.getElementById('nTitle').value, url: document.getElementById('nUrl').value, type: document.getElementById('nType').value }; if(d.title) db.ref('dsssb_notes_db').push(d).then(() => alert("Note Added!")); }
-function updateQOD() { const d = { q: document.getElementById('qodQ').value, opt: [document.getElementById('qodO1').value, document.getElementById('qodO2').value, document.getElementById('qodO3').value, document.getElementById('qodO4').value], ans: parseInt(document.getElementById('qodAns').value) }; if(d.q) db.ref('dsssb_config/qod').set(d).then(() => alert("QOD Updated!")); }
+function updateQOD() { const d = { q: document.getElementById('qodQ').value, opt: [document.getElementById('qodO1').value, document.getElementById('qodO2').value, document.getElementById('qodO3').value, document.getElementById('qodO4').value], ans: parseInt(document.getElementById('qodAns').value) }; if(d.q) db.ref('dsssb_config/qod').set(d).then(() => alert("✅ Single QOD Updated!")); }
 
-// 🔥 NEW: BULK UPLOAD QOD LOGIC
-function uploadAutoQOD() {
-    const rawJson = document.getElementById('autoQodJSON').value.trim();
-    if(!rawJson) return alert("Please paste the JSON data!");
+function bulkUploadQOD() {
+    const rawJson = document.getElementById('qodBulkJSON').value.trim();
+    if(!rawJson) return alert("⚠️ Please paste CBT JSON V4.0 data for QOD!");
+    
+    // Get the button to show loading animation
+    const btn = event.currentTarget || document.querySelector('button[onclick="bulkUploadQOD()"]');
+    const originalText = btn.innerHTML;
+
     try {
-        const parsedQuestions = JSON.parse(rawJson);
-        if(!Array.isArray(parsedQuestions)) return alert("Invalid Format! JSON ek Array hona chahiye [ ].");
-        db.ref('dsssb_questions_db/auto_qod').set(parsedQuestions).then(() => {
-            alert("✅ Success! " + parsedQuestions.length + " Daily Questions successfully uploaded. App will automatically rotate them daily.");
-            document.getElementById('autoQodJSON').value = ""; 
+        // Remove smart quotes if copied from Word/Telegram
+        let cleanJson = rawJson.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+        const parsedData = JSON.parse(cleanJson);
+        
+        if(!Array.isArray(parsedData)) return alert("❌ Invalid Format! JSON ek Array [ ] hona chahiye.");
+        
+        if(parsedData.length > 0 && !parsedData[0].hasOwnProperty('q_en')) {
+            if(!confirm("⚠️ Warning: 'q_en' key is missing. Are you sure this is CBT JSON V4.0 format?")) return;
+        }
+
+        // Show loading state
+        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Uploading to Firebase...";
+        btn.disabled = true;
+
+        // Save to Firebase
+        db.ref('dsssb_qod_bank').set(parsedData).then(() => {
+            alert("✅ Fantastic! " + parsedData.length + " Questions added to QOD Bank.");
+            document.getElementById('qodBulkJSON').value = ""; 
+        }).catch(error => {
+            // FIREBASE RULES OR CONNECTION ERROR
+            alert("❌ Firebase Error: " + error.message);
+            console.error("Firebase Error:", error);
+        }).finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         });
-    } catch(error) { alert("❌ Error: JSON Format galat hai.\nDetail: " + error.message); }
+
+    } catch(error) { 
+        // JSON FORMATTING ERROR
+        alert("❌ JSON Format Error!\nDetail: " + error.message + "\n\nTip: JSON formatter (jsonlint.com) pe apna data check karein."); 
+        console.error("JSON Error:", error);
+    }
 }
 function updateNews() { const txt = document.getElementById('newsInput').value; if(txt) db.ref('dsssb_config/news').set(txt).then(() => alert("News Updated!")); }
 function sendAlert() { const msg = document.getElementById('alertMsg').value; if(msg) db.ref('dsssb_config/alert').set({ msg: msg, time: Date.now() }).then(() => alert("Alert Sent!")); }
@@ -1161,8 +1404,7 @@ function delItem(p, isTest = false, tId = "") {
     } 
 }
 function resolve(k) { db.ref('dsssb_reports/'+k).remove(); }
-
-// 📂 FOLDER MANAGEMENT FUNCTIONS 
+// --- 📂 FOLDER MANAGEMENT FUNCTIONS ---
 function addExamFolder() {
     const name = document.getElementById('fName').value.trim();
     const key = document.getElementById('fKey').value.trim();
@@ -1191,6 +1433,7 @@ function addExamFolder() {
     // Creating folder with unique ID based on key
     db.ref('dsssb_folders_tree/folder_' + key).set(folderData).then(() => {
         alert("✅ Naya Folder Dashboard par update ho gaya!");
+        // Clear input fields
         ['fName', 'fKey', 'fIcon', 'fSubs', 'fOrder'].forEach(id => document.getElementById(id).value = "");
     }).catch(err => alert("Error: " + err.message));
 }
