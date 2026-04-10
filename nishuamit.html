@@ -88,6 +88,7 @@
     <div class="menu-item active" onclick="showSec('dashboard', this)"><i class="fas fa-chart-pie"></i> Overview</div>
     <div class="menu-item" onclick="showSec('payments', this)"><i class="fas fa-rupee-sign"></i> Payments</div>
     <div class="menu-item" onclick="showSec('content', this)"><i class="fas fa-layer-group"></i> Manage Content</div>
+    <div class="menu-item" onclick="showSec('folders', this)"><i class="fas fa-folder-open"></i> Manage Folders</div>
     <div class="menu-item" onclick="showSec('extractor', this)"><i class="fas fa-filter"></i> JSON Extractor</div>
     <div class="menu-item" onclick="showSec('engagement', this)"><i class="fas fa-fire"></i> Broadcast & QOD</div>
     <div class="menu-item" onclick="showSec('users', this)"><i class="fas fa-users"></i> Users & Tracking</div>
@@ -241,10 +242,51 @@
                 <button onclick="addNote()" style="background:#10b981; width:100%;"><i class="fas fa-plus"></i> Add Note</button>
             </div>
         </div>
+
+        <div class="form-box" style="margin-top:20px; border:2px solid #eab308; background: #fefce8;">
+            <div class="form-title" style="color:#ca8a04;"><i class="fas fa-keyboard"></i> Add Typing Simulator Passage</div>
+            <p style="color:grey; font-size:12px; margin-bottom:10px;">Yahan typing test ke liye English ya Hindi passage add karein.</p>
+            <input type="text" id="typePassageTitle" placeholder="Enter Test Title (e.g., DSSSB LDC Mock 1)" style="margin-bottom:10px; border-color:#eab308;">
+            <textarea id="typePassageText" placeholder="Paste the exact English/Hindi paragraph here..." style="height:120px; font-size:14px; border-color:#eab308; margin-bottom:10px;"></textarea>
+            <button onclick="saveTypingPassage()" style="background:#eab308; width:100%;"><i class="fas fa-upload"></i> Upload Typing Passage</button>
+        </div>
         
         <h3 style="margin-top:20px; margin-bottom:10px;">Manage All Content (Edit / Delete)</h3>
         <div class="table-box">
             <table><thead><tr><th>Type</th><th>Title</th><th>Action</th></tr></thead><tbody id="contentTable"></tbody></table>
+        </div>
+    </div>
+
+    <div id="folders" class="section">
+        <div class="header"><h2>📂 Manage Exam Folders (3D System)</h2></div>
+        
+        <div class="form-box" style="border:2px solid var(--primary); background: #f5f3ff;">
+            <div class="form-title" style="color:var(--primary);"><i class="fas fa-plus-circle"></i> Create New Exam Folder</div>
+            <div class="grid-2">
+                <input type="text" id="fName" placeholder="Exam Name (e.g. SSC CGL 2024)">
+                <input type="text" id="fKey" placeholder="Exam Key (Unique, e.g. ssc_cgl)">
+                <input type="text" id="fIcon" placeholder="Emoji Icon (e.g. 🏛️)">
+                <select id="fColor">
+                    <option value="f-blue">Blue (Standard)</option>
+                    <option value="f-purple">Purple (Special)</option>
+                    <option value="f-green">Green (Success)</option>
+                    <option value="f-live">Red (Live/Alert)</option>
+                    <option value="f-math">Deep Blue (Maths)</option>
+                    <option value="f-reas">Violet (Reasoning)</option>
+                </select>
+                <input type="number" id="fOrder" placeholder="Display Order (1, 2, 3...)">
+                <input type="text" id="fSubs" placeholder="Sub-Categories (Comma separated: Full Mock,Maths,GK)">
+            </div>
+            <p style="font-size:11px; color:grey; margin-bottom:10px;"><b>Note:</b> Sub-categories ko comma (,) se alag karein. System automatic filter buttons bana dega.</p>
+            <button onclick="addExamFolder()" style="width:100%;"><i class="fas fa-save"></i> Save Folder to Dashboard</button>
+        </div>
+
+        <h3 style="margin-bottom:10px;">Active 3D Folders</h3>
+        <div class="table-box">
+            <table>
+                <thead><tr><th>Icon</th><th>Folder Name</th><th>Key & Subs</th><th>Action</th></tr></thead>
+                <tbody id="folderTableBody"></tbody>
+            </table>
         </div>
     </div>
 
@@ -313,11 +355,18 @@
                 <select id="qodAns" style="margin-bottom:10px;"><option value="0">Ans: 1</option><option value="1">Ans: 2</option><option value="2">Ans: 3</option><option value="3">Ans: 4</option></select>
                 <button onclick="updateQOD()" style="background:#f97316; width:100%;"><i class="fas fa-sync"></i> Update QOD</button>
             </div>
-            <div class="form-box">
+          <div class="form-box">
                 <div class="form-title">📰 Update News Ticker</div>
                 <input type="text" id="newsInput" placeholder="Announcement text..." style="margin-bottom:10px;">
                 <button onclick="updateNews()" style="width:100%;"><i class="fas fa-bullhorn"></i> Update News</button>
             </div>
+        </div>
+
+        <div class="form-box" style="border:2px solid #8b5cf6; background: #faf5ff;">
+            <div class="form-title" style="color:#8b5cf6;">📅 Auto-QOD Bulk Upload (JSON)</div>
+            <p style="color:grey; font-size:12px; margin-bottom:10px;">Yahan ek JSON array paste karein jisme bahut saare questions hon. App daily ek question automatically rotate karega (Date ke hisaab se)!</p>
+            <textarea id="autoQodJSON" placeholder="Paste your JSON array here like: [ { q_en: '...', ans: '1', ... } ]" style="height:120px; font-family:monospace; font-size:12px; border-color:#8b5cf6; margin-bottom:10px;"></textarea>
+            <button onclick="uploadAutoQOD()" style="background:#8b5cf6; width:100%;"><i class="fas fa-calendar-check"></i> Upload Auto-QOD Series</button>
         </div>
     </div>
 
@@ -420,7 +469,8 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const storage = firebase.storage();
 
-let contentCache = { tests: {}, videos: {}, notes: {} };
+// NEW: Added typing to contentCache
+let contentCache = { tests: {}, videos: {}, notes: {}, typing: {} };
 let userMap = {}; 
 let proUsersSnap = null; 
 
@@ -581,11 +631,32 @@ function loadData() {
         renderContentTable();
     });
     
-    // 6. Videos & Notes
+    // 6. Videos, Notes & Typing Passages
     db.ref('dsssb_videos_db').on('value', s => { contentCache.videos = s.val() || {}; renderContentTable(); });
     db.ref('dsssb_notes_db').on('value', s => { contentCache.notes = s.val() || {}; renderContentTable(); });
-    
-    // 7. Recent Test Submissions
+    db.ref('typing_passages').on('value', s => { contentCache.typing = s.val() || {}; renderContentTable(); });
+
+    // 📂 7. Dynamic Folders Tree Loading
+    db.ref('dsssb_folders_tree').on('value', snap => {
+        const tbody = document.getElementById('folderTableBody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        if(snap.exists()) {
+            Object.entries(snap.val()).forEach(([k, f]) => {
+                let subNames = (f.subCategories || []).map(s => s.name).join(', ');
+                tbody.innerHTML += `<tr>
+                    <td style="font-size:24px;">${f.icon || '📁'}</td>
+                    <td><b>${f.name}</b><br><small style="color:var(--primary); font-weight:700;">Order: ${f.order || 0}</small></td>
+                    <td><span class="badge-offline">${f.examKey}</span><br><small style="color:grey;">${subNames}</small></td>
+                    <td><button class="btn-del" onclick="delItem('dsssb_folders_tree/${k}')"><i class="fas fa-trash"></i> Delete</button></td>
+                </tr>`;
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">No folders found. Add one above!</td></tr>';
+        }
+    });
+
+    // 8. Recent Test Submissions
     db.ref('dsssb_results_live').limitToLast(10).on('value', s => {
         const tbody = document.getElementById('recentTable'); tbody.innerHTML = '';
         Object.values(s.val()||{}).reverse().forEach(r => {
@@ -599,7 +670,7 @@ function loadData() {
 }
 
 /* =========================================
-   PRO USERS RENDERING LOGIC (WITH REAL NAMES)
+   PRO USERS RENDERING LOGIC
    ========================================= */
 function renderProUsersTable() {
     const tbody = document.getElementById('proUsersTableBody');
@@ -649,9 +720,9 @@ function renderContentTable() {
     const tbody = document.getElementById('contentTable'); 
     let html = '';
     
+    // Tests
     Object.entries(contentCache.tests).reverse().forEach(([k,v]) => {
         let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
-        
         let liveStatus = '⚪ Normal';
         if (v.status === 'scheduled' || v.scheduledTime) liveStatus = '⏰ ' + new Date(v.scheduledTime).toLocaleString();
         else if (v.isLive === 'true' || v.isLive === true || v.status === 'true') liveStatus = '🔴 LIVE';
@@ -666,6 +737,7 @@ function renderContentTable() {
         </tr>`;
     });
     
+    // Videos
     Object.entries(contentCache.videos).reverse().forEach(([k,v]) => {
         let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
         html += `<tr>
@@ -675,12 +747,22 @@ function renderContentTable() {
         </tr>`;
     });
     
+    // Notes
     Object.entries(contentCache.notes).reverse().forEach(([k,v]) => {
         let badge = v.type === 'pro' ? '👑 Pro' : '🟢 Free';
         html += `<tr>
             <td><span style="background:#d1fae5; color:#059669; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">Note</span></td>
             <td><b>${v.title}</b> <br><span style="font-size:11px; color:grey; font-weight:600;">${badge}</span></td>
             <td><button class="btn-del" onclick="delItem('dsssb_notes_db/${k}', false)"><i class="fas fa-trash"></i> Delete</button></td>
+        </tr>`;
+    });
+
+    // NEW: Typing Passages
+    Object.entries(contentCache.typing).reverse().forEach(([k,v]) => {
+        html += `<tr>
+            <td><span style="background:#fef9c3; color:#ca8a04; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">Typing</span></td>
+            <td><b>${v.title}</b> <br><span style="font-size:11px; color:grey; font-weight:600;">ID: ${k}</span></td>
+            <td><button class="btn-del" onclick="delItem('typing_passages/${k}', false)"><i class="fas fa-trash"></i> Delete</button></td>
         </tr>`;
     });
     
@@ -700,11 +782,9 @@ function openEditMetadataModal(key) {
     document.getElementById('eCutoff').value = t.cutoff || ""; 
     document.getElementById('eType').value = t.type || 'free';
     
-    // Set Dynamic Marking Values
     document.getElementById('ePm').value = t.pm !== undefined ? t.pm : 1;
     document.getElementById('eNm').value = t.nm !== undefined ? t.nm : 0.25;
 
-    // Set Section Lock Status
     let lockStat = (t.lock === false || t.lock === "false") ? "false" : "true";
     document.getElementById('eLock').value = lockStat;
 
@@ -755,7 +835,7 @@ function saveEditTestMetadata() {
         scheduledTime: scheduledTime,
         pm: document.getElementById('ePm').value || 1,
         nm: document.getElementById('eNm').value || 0.25,
-        lock: lockVal // Update lock status
+        lock: lockVal 
     };
 
     const cutoffVal = document.getElementById('eCutoff').value;
@@ -811,9 +891,9 @@ function addTest() {
     const catVal = document.getElementById('tCat').value;
     const typeVal = document.getElementById('tType').value;
     const cutoffVal = document.getElementById('tCutoff').value || 0;
-    const pmVal = document.getElementById('tPm').value || 1;       
+    const pmVal = document.getElementById('tPm').value || 1;        
     const nmVal = document.getElementById('tNm').value || 0.25;    
-    const lockVal = document.getElementById('tLock').value === 'true'; // New Logic
+    const lockVal = document.getElementById('tLock').value === 'true'; 
     const statusVal = document.getElementById('tLive').value; 
 
     let scheduledTime = null;
@@ -829,7 +909,7 @@ function addTest() {
         isLive: statusVal === 'true' ? 'true' : 'false', 
         status: statusVal, scheduledTime: scheduledTime,
         pm: pmVal, nm: nmVal,
-        lock: lockVal // Push lock setting
+        lock: lockVal 
     }; 
 
     if(titleVal && idVal) {
@@ -865,9 +945,9 @@ async function generateMixTest() {
     const catVal = document.getElementById('mixCat').value;
     const typeVal = document.getElementById('mixType').value;
     const cutoffVal = document.getElementById('mixCutoff').value || 0;
-    const pmVal = document.getElementById('mixPm').value || 1;       
+    const pmVal = document.getElementById('mixPm').value || 1;        
     const nmVal = document.getElementById('mixNm').value || 0.25;    
-    const lockVal = document.getElementById('mixLock').value === 'true'; // New Logic
+    const lockVal = document.getElementById('mixLock').value === 'true'; 
     const statusVal = document.getElementById('mixLive').value; 
 
     let scheduledTime = null;
@@ -902,7 +982,7 @@ async function generateMixTest() {
             isLive: statusVal === 'true' ? 'true' : 'false', 
             status: statusVal, scheduledTime: scheduledTime,
             pm: pmVal, nm: nmVal,
-            lock: lockVal // Push lock setting
+            lock: lockVal 
         }; 
         await db.ref('dsssb_tests_db/' + idVal).set(d);
 
@@ -946,6 +1026,30 @@ function updateTestJSON() {
             });
         }
     } catch (e) { alert("❌ JSON Format Error!\n" + e.message); }
+}
+
+/* =========================================
+   🔥 TYPING PASSAGE LOGIC
+   ========================================= */
+function saveTypingPassage() {
+    const title = document.getElementById('typePassageTitle').value.trim();
+    const content = document.getElementById('typePassageText').value.trim();
+    
+    if(!title || !content) return alert("⚠️ Please enter both Title and Passage Text!");
+    
+    if(confirm("Are you sure you want to add this typing passage?")) {
+        db.ref("typing_passages").push({
+            title: title, 
+            content: content, 
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            alert("✅ Typing Passage Added Successfully!");
+            document.getElementById('typePassageTitle').value = "";
+            document.getElementById('typePassageText').value = "";
+        }).catch(err => {
+            alert("❌ Error: " + err.message);
+        });
+    }
 }
 
 /* =========================================
@@ -1018,7 +1122,7 @@ function copyJSON() {
 }
 
 /* =========================================
-   OTHER UTILS (VIDEOS, NOTES, QOD)
+   OTHER UTILS (VIDEOS, NOTES, QOD, FOLDERS)
    ========================================= */
 function addPro() { 
     const v = document.getElementById('proInput').value.trim(); 
@@ -1029,6 +1133,20 @@ function addPro() {
 function addVideo() { const url = document.getElementById('vUrl').value; const vidId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop(); const d = { title: document.getElementById('vTitle').value, url: url, thumb: document.getElementById('vThumb').value || `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`, type: document.getElementById('vType').value }; if(d.title) db.ref('dsssb_videos_db').push(d).then(() => alert("Video Added!")); }
 function addNote() { const d = { title: document.getElementById('nTitle').value, url: document.getElementById('nUrl').value, type: document.getElementById('nType').value }; if(d.title) db.ref('dsssb_notes_db').push(d).then(() => alert("Note Added!")); }
 function updateQOD() { const d = { q: document.getElementById('qodQ').value, opt: [document.getElementById('qodO1').value, document.getElementById('qodO2').value, document.getElementById('qodO3').value, document.getElementById('qodO4').value], ans: parseInt(document.getElementById('qodAns').value) }; if(d.q) db.ref('dsssb_config/qod').set(d).then(() => alert("QOD Updated!")); }
+
+// 🔥 NEW: BULK UPLOAD QOD LOGIC
+function uploadAutoQOD() {
+    const rawJson = document.getElementById('autoQodJSON').value.trim();
+    if(!rawJson) return alert("Please paste the JSON data!");
+    try {
+        const parsedQuestions = JSON.parse(rawJson);
+        if(!Array.isArray(parsedQuestions)) return alert("Invalid Format! JSON ek Array hona chahiye [ ].");
+        db.ref('dsssb_questions_db/auto_qod').set(parsedQuestions).then(() => {
+            alert("✅ Success! " + parsedQuestions.length + " Daily Questions successfully uploaded. App will automatically rotate them daily.");
+            document.getElementById('autoQodJSON').value = ""; 
+        });
+    } catch(error) { alert("❌ Error: JSON Format galat hai.\nDetail: " + error.message); }
+}
 function updateNews() { const txt = document.getElementById('newsInput').value; if(txt) db.ref('dsssb_config/news').set(txt).then(() => alert("News Updated!")); }
 function sendAlert() { const msg = document.getElementById('alertMsg').value; if(msg) db.ref('dsssb_config/alert').set({ msg: msg, time: Date.now() }).then(() => alert("Alert Sent!")); }
 function toggleMaintenance(s) { db.ref('dsssb_config/maintenance').set(s).then(() => alert("Mode: " + (s ? "LOCKED" : "UNLOCKED"))); }
@@ -1043,6 +1161,39 @@ function delItem(p, isTest = false, tId = "") {
     } 
 }
 function resolve(k) { db.ref('dsssb_reports/'+k).remove(); }
+
+// 📂 FOLDER MANAGEMENT FUNCTIONS 
+function addExamFolder() {
+    const name = document.getElementById('fName').value.trim();
+    const key = document.getElementById('fKey').value.trim();
+    const icon = document.getElementById('fIcon').value.trim();
+    const color = document.getElementById('fColor').value;
+    const order = document.getElementById('fOrder').value || 99;
+    const subsRaw = document.getElementById('fSubs').value.split(',');
+
+    if(!name || !key) return alert("Bhai, Name aur Key daalna zaroori hai!");
+
+    // Cleaning sub-categories and making filter keys
+    const subCategories = subsRaw.filter(s => s.trim() !== "").map(s => ({
+        name: s.trim(),
+        filterKey: s.trim().toLowerCase().replace(/\s+/g, '_')
+    }));
+
+    const folderData = {
+        name: name,
+        examKey: key,
+        icon: icon || "📁",
+        colorClass: color,
+        order: parseInt(order),
+        subCategories: subCategories
+    };
+
+    // Creating folder with unique ID based on key
+    db.ref('dsssb_folders_tree/folder_' + key).set(folderData).then(() => {
+        alert("✅ Naya Folder Dashboard par update ho gaya!");
+        ['fName', 'fKey', 'fIcon', 'fSubs', 'fOrder'].forEach(id => document.getElementById(id).value = "");
+    }).catch(err => alert("Error: " + err.message));
+}
 </script>
 </body>
 </html>
