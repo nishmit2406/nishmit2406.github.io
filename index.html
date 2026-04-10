@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,41 +104,35 @@ body { display: block; background: var(--bg-body); color: var(--text-main); padd
 .notebook-banner:active { transform: scale(0.98); }
 .nb-icon-box { background: rgba(255,255,255,0.2); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; }
 
-/* 🔥 HEAVY 3D FOLDERS SYSTEM 🔥 */
-@keyframes glowPulse { 0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); } 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); } }
+/* 🎯 MODERN CLEAN CATEGORY CARDS 🎯 */
+.modern-cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.modern-cat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-align: center; position: relative; overflow: hidden; }
+.modern-cat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--border-color); transition: 0.3s; opacity: 0.5; }
+.modern-cat-card:active { transform: scale(0.95); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.modern-cat-card:hover { border-color: var(--primary-light); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.08); }
+.modern-cat-card:hover::before { background: var(--primary); opacity: 1; }
 
-.folder-3d-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px 12px; }
-.folder-3d { position: relative; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-top: 10px;}
-.folder-3d:active { transform: scale(0.95); }
-.folder-3d.glowing { animation: glowPulse 2.5s infinite; border-radius: 16px; }
+.modern-cat-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1); margin-bottom: 2px; }
+.modern-cat-name { font-size: 13px; font-weight: 700; color: var(--text-main); line-height: 1.2; }
 
-.folder-3d .f-tab { width: 45%; height: 18px; background: inherit; border-radius: 10px 10px 0 0; position: absolute; top: -14px; left: 10px; filter: brightness(0.80); border: 1px solid rgba(255,255,255,0.1); border-bottom: none;}
-.folder-3d .f-body { background: inherit; padding: 22px 15px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: flex-start; position: relative; z-index: 2; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); border-bottom: 4px solid rgba(0,0,0,0.2);}
-.folder-3d .f-body.center { align-items: center; text-align: center; padding: 22px 10px; }
-.folder-3d .f-body::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%; background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%); pointer-events: none;}
+/* Icon Themes */
+.ic-blue { background: #e0e7ff; color: #4f46e5; }
+.ic-purple { background: #f3e8ff; color: #9333ea; }
+.ic-pink { background: #fce7f3; color: #db2777; }
+.ic-orange { background: #ffedd5; color: #ea580c; }
+.ic-teal { background: #ccfbf1; color: #0d9488; }
+.ic-slate { background: #f1f5f9; color: #475569; }
+.ic-red { background: #fee2e2; color: #e11d48; }
+.ic-yellow { background: #fef3c7; color: #d97706; }
+.ic-green { background: #dcfce7; color: #059669; }
 
-.f-icon { font-size: 28px; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
-.f-name { font-size: 14px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px; line-height: 1.3;}
-
-/* Folder Colors */
-.f-live { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-.f-saved { background: linear-gradient(135deg, #f59e0b, #b45309); }
-.f-attempt { background: linear-gradient(135deg, #10b981, #047857); }
-.f-full { background: linear-gradient(135deg, #4f46e5, #3730a3); }
-.f-math { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-.f-reas { background: linear-gradient(135deg, #9333ea, #7e22ce); }
-.f-eng { background: linear-gradient(135deg, #ec4899, #be185d); }
-.f-hin { background: linear-gradient(135deg, #f97316, #c2410c); }
-.f-gk { background: linear-gradient(135deg, #14b8a6, #0f766e); }
-.f-comp { background: linear-gradient(135deg, #64748b, #475569); }
-.f-blue { background: linear-gradient(135deg, #0ea5e9, #0369a1); }
-.f-purple { background: linear-gradient(135deg, #8b5cf6, #581c87); }
-.f-green { background: linear-gradient(135deg, #10b981, #047857); }
-
-.horizontal-3d-scroll { display: flex; gap: 15px; overflow-x: auto; padding: 15px 20px 25px; scrollbar-width: none; }
+.horizontal-3d-scroll { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; padding: 5px 5px 20px 5px; }
 .horizontal-3d-scroll::-webkit-scrollbar { display: none; }
-.horizontal-3d-scroll .folder-3d { min-width: 120px; flex-shrink: 0; }
+.horizontal-3d-scroll .modern-cat-card { min-width: 105px; flex-shrink: 0; }
 
+@media(min-width: 1024px) {
+    .modern-cat-grid { grid-template-columns: repeat(6, 1fr); gap: 20px; }
+}
 .section-title { font-weight: 800; margin-bottom: 12px; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
 .target-exams-section { padding: 0 20px; margin-bottom: 25px; }
 
@@ -451,39 +446,27 @@ textarea { height: 120px; resize: none; }
             </div>
         </div>
 
-        <div class="target-exams-section">
+     <div class="target-exams-section">
             <div class="section-title">🎯 Specific Exams</div>
-            <div class="folder-3d-grid">
-                <div class="folder-3d f-blue" onclick="openExamFolder('asst_sup')">
-                    <div class="f-tab"></div>
-                    <div class="f-body center">
-                        <span class="f-icon">👮‍♂️</span>
-                        <span class="f-name">Asst. Supt</span>
-                    </div>
+            <div class="modern-cat-grid">
+                <div class="modern-cat-card" onclick="openExamFolder('asst_sup')">
+                    <div class="modern-cat-icon ic-blue">👮‍♂️</div>
+                    <div class="modern-cat-name">Asst. Supt</div>
                 </div>
-                <div class="folder-3d f-purple" onclick="openExamFolder('dass_grade_2')">
-                    <div class="f-tab"></div>
-                    <div class="f-body center">
-                        <span class="f-icon">🎓</span>
-                        <span class="f-name">DASS Gr II</span>
-                    </div>
+                <div class="modern-cat-card" onclick="openExamFolder('dass_grade_2')">
+                    <div class="modern-cat-icon ic-purple">🎓</div>
+                    <div class="modern-cat-name">DASS Gr II</div>
                 </div>
-                <div class="folder-3d f-green glowing" onclick="openExamFolder('ssc_pyq')">
-                    <div class="f-tab"></div>
-                    <div class="f-body center">
-                        <span class="f-icon">🏛️</span>
-                        <span class="f-name">SSC PYQ</span>
-                    </div>
+                <div class="modern-cat-card" onclick="openExamFolder('ssc_pyq')">
+                    <div class="modern-cat-icon ic-green">🏛️</div>
+                    <div class="modern-cat-name">SSC PYQ</div>
                 </div>
-                <div class="folder-3d f-attempt" onclick="openExamFolder('my_attempts')">
-                    <div class="f-tab"></div>
-                    <div class="f-body center">
-                        <span class="f-icon">📝</span>
-                        <span class="f-name">My Attempts</span>
-                    </div>
+                <div class="modern-cat-card" onclick="openExamFolder('my_attempts')">
+                    <div class="modern-cat-icon ic-teal">📝</div>
+                    <div class="modern-cat-name">My Attempts</div>
                 </div>
             </div>
-        </div>
+        </div> 
 
         <div class="qod-card">
             <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
@@ -506,23 +489,44 @@ textarea { height: 120px; resize: none; }
         </div>
     </div>
 
-    <div id="tab-tests" class="tab-content" style="display:none;">
+  <div id="tab-tests" class="tab-content" style="display:none;">
         <div class="list-container" style="padding-top:15px;">
-            <div class="search-box">
-                <i class="fas fa-search" style="color:var(--text-muted);"></i>
-                <input type="text" id="testSearch" placeholder="Search for Mocks or Subjects..." onkeyup="debouncedTestSearch(this.value)">
-            </div>
-            <div style="position: relative; margin-bottom: 5px; margin-left: 15px; margin-right: 15px;">
-                <button class="desk-scroll-btn left-btn" style="top: 40%; width: 34px; height: 34px; font-size: 14px;" onclick="document.getElementById('mockFiltersRow').scrollBy({left: -200, behavior: 'smooth'})"><i class="fas fa-chevron-left"></i></button>
-                <button class="desk-scroll-btn right-btn" style="top: 40%; width: 34px; height: 34px; font-size: 14px;" onclick="document.getElementById('mockFiltersRow').scrollBy({left: 200, behavior: 'smooth'})"><i class="fas fa-chevron-right"></i></button>
+            
+            <div style="background:var(--bg-card); padding:15px; border-radius:16px; border:1px solid var(--border-color); margin-bottom:15px; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
+                <div style="font-weight:800; color:var(--primary); margin-bottom:12px; font-size:15px;"><i class="fas fa-sliders-h"></i> Find Your Mock Test</div>
                 
-            <div class="filter-scroll" id="mockFiltersRow" style="margin-bottom: 0;">
-                    <div class="filter-pill active" onclick="filterTests('all', this)">All Tests</div>
-                    <div class="filter-pill" style="color:#ef4444;" onclick="filterTests('Live', this)">Live 🔴</div>
-                    <div class="filter-pill" style="color:#f59e0b;" onclick="filterTests('Saved', this)">Saved ⭐</div>
-                    <div class="filter-pill" style="color:#10b981;" onclick="filterTests('Attempted', this)">Attempted ✅</div>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="search-box" style="margin:0; box-shadow:none; border:1px solid var(--border-color); padding: 10px 15px;">
+                        <i class="fas fa-search" style="color:var(--text-muted);"></i>
+                        <input type="text" id="testSearch" placeholder="Search Mocks (e.g., SSC, DSSSB)..." onkeyup="debouncedTestSearch(this.value)">
+                    </div>
+
+                    <div style="display:flex; gap:10px;">
+                        <select id="examCategoryFilter" onchange="applyModernFilters()" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-main); font-weight:600; outline:none; cursor:pointer; font-size:13px;">
+                            <option value="all">📚 All Subjects</option>
+                            <option value="full">📑 Full Mocks</option>
+                            <option value="math">🧮 Maths</option>
+                            <option value="reasoning">🧠 Reasoning</option>
+                            <option value="english">🅰️ English</option>
+                            <option value="hindi">अ Hindi</option>
+                            <option value="gk">🌍 GK</option>
+                            <option value="computer">💻 Computer</option>
+                        </select>
+
+                        <select id="examStatusFilter" onchange="applyModernFilters()" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-main); font-weight:600; outline:none; cursor:pointer; font-size:13px;">
+                            <option value="all">⚡ All Status</option>
+                            <option value="live">🔴 Live Now</option>
+                            <option value="attempted">✅ Attempted</option>
+                            <option value="saved">⭐ Saved</option>
+                        </select>
+                    </div>
                 </div>
             </div>
+            
+            <div style="position: relative; margin-bottom: 5px;">
+                <div class="filter-scroll" id="mockFiltersRow" style="margin-bottom: 0;"></div>
+            </div>
+
             <div id="testListContainer" style="margin-top: 15px;"></div>
         </div>
     </div>
@@ -559,52 +563,34 @@ textarea { height: 120px; resize: none; }
             <div class="mf-arrow"><i class="fas fa-chevron-right"></i></div>
         </div>
 
-        <h3 style="font-size:16px; font-weight:800; margin: 30px 0 15px; color:var(--text-main);">Subject Wise Folders</h3>
+    <h3 style="font-size:16px; font-weight:800; margin: 30px 0 15px; color:var(--text-main);">Subject Wise Folders</h3>
         
-        <div class="folder-3d-grid">
-            <div class="folder-3d f-math" onclick="openExamFolder('Maths', true)">
-                <div class="f-tab"></div>
-                <div class="f-body center">
-                    <span class="f-icon">🧮</span>
-                    <span class="f-name">Maths</span>
-                </div>
+        <div class="modern-cat-grid">
+            <div class="modern-cat-card" onclick="openExamFolder('Maths', true)">
+                <div class="modern-cat-icon ic-blue">🧮</div>
+                <div class="modern-cat-name">Maths</div>
             </div>
-            <div class="folder-3d f-reas" onclick="openExamFolder('Reasoning', true)">
-                <div class="f-tab"></div>
-                <div class="f-body center">
-                    <span class="f-icon">🧠</span>
-                    <span class="f-name">Reasoning</span>
-                </div>
+            <div class="modern-cat-card" onclick="openExamFolder('Reasoning', true)">
+                <div class="modern-cat-icon ic-purple">🧠</div>
+                <div class="modern-cat-name">Reasoning</div>
             </div>
-            <div class="folder-3d f-eng" onclick="openExamFolder('English', true)">
-                <div class="f-tab"></div>
-                <div class="f-body center">
-                    <span class="f-icon">🅰️</span>
-                    <span class="f-name">English</span>
-                </div>
+            <div class="modern-cat-card" onclick="openExamFolder('English', true)">
+                <div class="modern-cat-icon ic-pink">🅰️</div>
+                <div class="modern-cat-name">English</div>
             </div>
-            <div class="folder-3d f-hin" onclick="openExamFolder('Hindi', true)">
-                <div class="f-tab"></div>
-                <div class="f-body center">
-                    <span class="f-icon">अ</span>
-                    <span class="f-name">Hindi</span>
-                </div>
+            <div class="modern-cat-card" onclick="openExamFolder('Hindi', true)">
+                <div class="modern-cat-icon ic-orange">अ</div>
+                <div class="modern-cat-name">Hindi</div>
             </div>
-            <div class="folder-3d f-gk" onclick="openExamFolder('GK', true)">
-                <div class="f-tab"></div>
-                <div class="f-body center">
-                    <span class="f-icon">🌍</span>
-                    <span class="f-name">Gen. GK</span>
-                </div>
+            <div class="modern-cat-card" onclick="openExamFolder('GK', true)">
+                <div class="modern-cat-icon ic-teal">🌍</div>
+                <div class="modern-cat-name">Gen. GK</div>
             </div>
-            <div class="folder-3d f-comp" onclick="openExamFolder('Computer', true)">
-                <div class="f-tab"></div>
-                <div class="f-body center">
-                    <span class="f-icon">💻</span>
-                    <span class="f-name">Computer</span>
-                </div>
+            <div class="modern-cat-card" onclick="openExamFolder('Computer', true)">
+                <div class="modern-cat-icon ic-slate">💻</div>
+                <div class="modern-cat-name">Computer</div>
             </div>
-        </div>
+        </div>   
     </div>
 
     <div id="tab-syllabus" class="tab-content" style="display:none;">
@@ -946,44 +932,38 @@ function showToast(msg) {
 function openExamFolder(folderId, isSubject = false) {
     const testTabIcon = document.querySelectorAll('.nav-item')[1];
     switchTab('tests', testTabIcon);
-    const searchInput = document.getElementById('testSearch');
     
-    searchInput.value = ''; 
+    document.getElementById('testSearch').value = ''; 
+    let catDropdown = document.getElementById('examCategoryFilter');
+    let statDropdown = document.getElementById('examStatusFilter');
+    
+    // Reset defaults
+    catDropdown.value = 'all';
+    statDropdown.value = 'all';
 
-    let pillText = folderId;
-    if(folderId === 'my_attempts') pillText = 'Attempted';
-    if(folderId === 'Live') pillText = 'Live';
-    if(folderId === 'Saved') pillText = 'Saved';
-    if(folderId === 'Full Mock') pillText = 'Full Mock';
-
-    // 🔥 FIX: filterCat को सही कीवर्ड देने के लिए
-    let filterCat = folderId === 'my_attempts' ? 'attempted' : folderId;
-
-    let pills = Array.from(document.querySelectorAll('.filter-pill'));
-    let targetPill = pills.find(p => p.innerText.toLowerCase().includes(pillText.toLowerCase()));
-
-    if (targetPill) {
-        filterTests(filterCat, targetPill);
-        const row = document.getElementById('mockFiltersRow');
-        const scrollPos = targetPill.offsetLeft - (row.clientWidth / 2) + (targetPill.clientWidth / 2);
-        row.scrollTo({ left: scrollPos, behavior: 'smooth' });
-    } else {
-        // 🔥 FIX: अगर Pill ना मिले तो भी Attempted फ़िल्टर काम करे
-        if (filterCat.toLowerCase() === 'attempted') {
-            filterTests('attempted', document.querySelector('.filter-pill.active'));
-        } else {
-            let searchText = folderId;
-            if(folderId === 'asst_sup') searchText = 'Assistant Superintendent';
-            if(folderId === 'dass_grade_2') searchText = 'DASS Grade II';
-            if(folderId === 'ssc_pyq') searchText = 'SSC';
-            
-            searchInput.value = searchText;
-            filterTests('all', document.querySelector('.filter-pill.active'), searchText);
-        }
+    // Set exact dropdown values based on the folder clicked
+    if(folderId === 'my_attempts') statDropdown.value = 'attempted';
+    else if(folderId === 'Live') statDropdown.value = 'live';
+    else if(folderId === 'Saved') statDropdown.value = 'saved';
+    else if(folderId === 'Full Mock') catDropdown.value = 'full';
+    else if(folderId === 'Maths') catDropdown.value = 'math';
+    else if(folderId === 'Reasoning') catDropdown.value = 'reasoning';
+    else if(folderId === 'English') catDropdown.value = 'english';
+    else if(folderId === 'Hindi') catDropdown.value = 'hindi';
+    else if(folderId === 'GK') catDropdown.value = 'gk';
+    else if(folderId === 'Computer') catDropdown.value = 'computer';
+    else {
+        // For specific exams (SSC, DASS, etc) use the search box
+        let searchText = folderId;
+        if(folderId === 'asst_sup') searchText = 'Assistant Superintendent';
+        if(folderId === 'dass_grade_2') searchText = 'DASS Grade II';
+        if(folderId === 'ssc_pyq') searchText = 'SSC';
+        document.getElementById('testSearch').value = searchText;
     }
-    showToast(`Opening ${pillText} Vault 📂`);
+    
+    applyModernFilters(); // Trigger the new filter
+    showToast(`Opened ${folderId.replace('_', ' ')} Vault 📂`);
 }
-
 function checkStreak() {
     const last = getSafeData('lastVisit');
     const today = new Date().toDateString();
@@ -1407,75 +1387,74 @@ async function fetchData(user) {
 const debouncedTestSearch = debounce((val) => searchTests(val), 300);
 const debouncedNoteSearch = debounce((val) => searchNotes(val), 300);
 
-function searchTests(query) { 
-    let activeFilterEl = document.querySelector('.filter-pill.active'); 
-    let cat = activeFilterEl ? activeFilterEl.innerText.replace(/[^a-zA-Z ]/g, '').trim() : 'all'; 
-    filterTests(cat, activeFilterEl, query); 
-}
+// Fallback for existing calls inside the app
+function filterTests(cat, el, searchQuery = "") { applyModernFilters(); }
+function searchTests(query) { applyModernFilters(); }
 
-function filterTests(cat, el, searchQuery = "") {
-    if(el) { 
-        document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active')); 
-        el.classList.add('active'); 
-    }
-    
-    let list = [...allTests].reverse();
+function applyModernFilters() {
+    const searchQuery = document.getElementById('testSearch').value.toLowerCase().trim();
+    const categoryFilter = document.getElementById('examCategoryFilter').value.toLowerCase();
+    const statusFilter = document.getElementById('examStatusFilter').value.toLowerCase();
+
+    let list = [...allTests].reverse().filter(t => t.dbKey !== 'auto_qod');
     let savedTests = JSON.parse(getSafeData('savedTests') || '[]');
-    
-    // EXCLUDE auto_qod from dashboard list
-    list = list.filter(t => t.dbKey !== 'auto_qod');
 
-    if (searchQuery) { 
-        let q = searchQuery.toLowerCase().trim();
-        if(q === 'reas') q = 'reasoning';
-        else if(q === 'math' || q === 'quant') q = 'math';
-        else if(q === 'eng') q = 'english';
-        else if(q === 'comp') q = 'computer';
-        else if(q === 'hin') q = 'hindi';
-        
+    // 1. Apply Search Filter
+    if (searchQuery) {
         list = list.filter(t => 
-            (t.title||"").toLowerCase().includes(q) || 
-            (t.category||"").toLowerCase().includes(q) || 
-            (t.tag||"").toLowerCase().includes(q) || 
-            (t.tags||"").toLowerCase().includes(q) || 
-            (t.title||"").toLowerCase().includes(searchQuery.toLowerCase())
-        ); 
-    } else if(cat && cat.toLowerCase() !== 'all tests' && cat.toLowerCase() !== 'all') {
-        const key = cat.toLowerCase();
-        if(key.includes('saved')) list = list.filter(t => savedTests.includes(t.dbKey));
-        // 🔥 LIVE FILTER FIX: Now it also checks category, tag, and tags arrays/strings
-        else if (key.includes('live')) {
+            (t.title||"").toLowerCase().includes(searchQuery) || 
+            (t.category||"").toLowerCase().includes(searchQuery) || 
+            (t.tags||"").toLowerCase().includes(searchQuery)
+        );
+    }
+
+    // 2. Apply Category/Subject Filter
+    if (categoryFilter !== 'all') {
+        list = list.filter(t => {
+            const title = (t.title||"").toLowerCase();
+            const cat = (t.category||"").toLowerCase();
+            const tags = (t.tag||"").toLowerCase() + " " + (t.tags||"").toLowerCase();
+            
+            if(categoryFilter === 'full') return cat.includes('full') || title.includes('full');
+            if(categoryFilter === 'math') return title.includes('math') || cat.includes('math') || tags.includes('math') || title.includes('quant');
+            if(categoryFilter === 'reasoning') return title.includes('reas') || cat.includes('reas') || tags.includes('reas') || title.includes('logic');
+            if(categoryFilter === 'english') return title.includes('eng') || cat.includes('eng') || tags.includes('eng');
+            if(categoryFilter === 'hindi') return title.includes('hin') || cat.includes('hin') || tags.includes('hin');
+            if(categoryFilter === 'gk') return title.includes('gk') || cat.includes('gk') || tags.includes('gk') || title.includes('general');
+            if(categoryFilter === 'computer') return title.includes('comp') || cat.includes('comp') || tags.includes('comp');
+            
+            return cat.includes(categoryFilter) || title.includes(categoryFilter);
+        });
+    }
+
+    // 3. Apply Status Filter (Live, Attempted, Saved)
+    if (statusFilter !== 'all') {
+        if (statusFilter === 'saved') {
+            list = list.filter(t => savedTests.includes(t.dbKey));
+        } else if (statusFilter === 'attempted') {
+            list = list.filter(t => attemptedTestIds.has(t.dbKey) || attemptedTestIds.has(t.id));
+        } else if (statusFilter === 'live') {
             list = list.filter(t => 
                 (t.isLive && t.isLive.toString() === 'true') || 
                 (t.scheduledTime && Date.now() >= t.scheduledTime) ||
                 (t.category && t.category.toLowerCase().includes('live')) ||
-                (t.tag && t.tag.toLowerCase().includes('live')) ||
                 (t.tags && t.tags.toLowerCase().includes('live'))
             );
         }
-        else if (key.includes('attempted')) list = list.filter(t => attemptedTestIds.has(t.dbKey) || attemptedTestIds.has(t.id));
-        else list = list.filter(t => { 
-            const title = (t.title||"").toLowerCase(), c = (t.category||"").toLowerCase(); 
-            const tags = (t.tag||"").toLowerCase() + " " + (t.tags||"").toLowerCase();
-            if(key.includes('reasoning')) return title.includes('reas') || title.includes('logic') || c.includes('reas') || tags.includes('reas');
-            if(key.includes('maths')) return title.includes('math') || title.includes('quant') || c.includes('math') || tags.includes('math');
-            if(key.includes('english')) return title.includes('eng') || c.includes('eng') || tags.includes('eng');
-            if(key.includes('hindi')) return title.includes('hin') || c.includes('hin') || tags.includes('hin');
-            if(key.includes('computer')) return title.includes('comp') || c.includes('comp') || tags.includes('comp');
-            if(key.includes('gk')) return title.includes('gk') || title.includes('general') || c.includes('gk') || tags.includes('gk');
-            return title.includes(key) || c.includes(key) || tags.includes(key); 
-        });
     }
-    
-    let html = "";
 
-    // Helper to generate Card HTML
-    const generateCardHTML = (t) => {
+    renderTestCards(list);
+}
+
+function renderTestCards(filteredList) {
+    let html = "";
+    let savedTests = JSON.parse(getSafeData('savedTests') || '[]');
+
+    filteredList.forEach(t => {
         let locked = t.type === 'pro' && !isPro;
         let isAttempted = attemptedTestIds.has(t.dbKey) || attemptedTestIds.has(t.id);
         let isSaved = savedTests.includes(t.dbKey);
         
-        // 🔥 LIVE BADGE FIX: Show badge if category/tags contains "live"
         let isActuallyLive = (t.isLive && t.isLive.toString() === 'true') || 
                              (t.scheduledTime && Date.now() >= t.scheduledTime) ||
                              (t.category && t.category.toLowerCase().includes('live')) ||
@@ -1487,7 +1466,6 @@ function filterTests(cat, el, searchQuery = "") {
         let pm = t.pm !== undefined ? parseFloat(t.pm) : 1;
         let nm = t.nm !== undefined ? parseFloat(t.nm) : 0.25;
         let isLocked = (t.lock === false || t.lock === "false") ? false : true;
-        
         let urlQuery = `testid=${t.dbKey}&title=${encodeURIComponent(t.title)}&time=${t.time||120}&pm=${pm}&nm=${nm}&lock=${isLocked}`;
         
         let buttonHTML = locked ? 
@@ -1502,7 +1480,7 @@ function filterTests(cat, el, searchQuery = "") {
         
         let viewRankBtn = `<button class="start-btn" style="background:var(--primary-light); color:var(--primary-dark); border:1px solid var(--primary); padding: 8px; font-size:13px; margin-top:8px; width:100%; box-shadow:none;" onclick="openTestLeaderboard('${t.dbKey}', '${(t.title||'').replace(/'/g, "\\'")}')">🏆 View Leaderboard</button>`;
 
-        return `<div class="test-card ${locked?'locked':''}">
+        html += `<div class="test-card ${locked?'locked':''}">
                     ${liveHTML}
                     <button class="save-btn ${isSaved?'saved':''}" onclick="toggleSaveTest('${t.dbKey}', this, event)">
                         ${isSaved?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>'}
@@ -1516,25 +1494,9 @@ function filterTests(cat, el, searchQuery = "") {
                     ${buttonHTML}
                     ${viewRankBtn}
                 </div>`;
-    };
+    });
 
-    if (searchQuery && list.length > 0) {
-        let fullMocks = list.filter(t => (t.category || "").toLowerCase().includes('full') || (t.title || "").toLowerCase().includes('full'));
-        let sectionalMocks = list.filter(t => !(t.category || "").toLowerCase().includes('full') && !(t.title || "").toLowerCase().includes('full'));
-        
-        if (fullMocks.length > 0) {
-            html += `<div class="section-title" style="margin-top:5px; color:var(--primary);">📑 Full Length Mocks</div>`;
-            fullMocks.forEach(t => html += generateCardHTML(t));
-        }
-        if (sectionalMocks.length > 0) {
-            html += `<div class="section-title" style="margin-top:20px; color:#ea580c;">🧩 Sectional Mocks</div>`;
-            sectionalMocks.forEach(t => html += generateCardHTML(t));
-        }
-    } else {
-        list.forEach(t => html += generateCardHTML(t));
-    }
-
-    document.getElementById('testListContainer').innerHTML = html || "<div style='text-align:center; color:var(--text-muted); padding:40px;'><i class='fas fa-box-open fa-3x' style='opacity:0.3; margin-bottom:10px;'></i><br>No tests found</div>";
+    document.getElementById('testListContainer').innerHTML = html || "<div style='text-align:center; color:var(--text-muted); padding:40px;'><i class='fas fa-box-open fa-3x' style='opacity:0.3; margin-bottom:10px;'></i><br>No tests found matching your filters.</div>";
 }
 
 function searchNotes(query) {
@@ -1766,17 +1728,17 @@ function fetchDynamicFolders() {
 
 function renderDynamicFolders() {
     let html = `
-        <div class="folder-3d f-live" onclick="openExamFolder('Live')">
-            <div class="f-tab"></div>
-            <div class="f-body"><span class="f-icon">🔴</span><span class="f-name">Live Tests</span></div>
+        <div class="modern-cat-card" onclick="openExamFolder('Live')">
+            <div class="modern-cat-icon ic-red">🔴</div>
+            <div class="modern-cat-name">Live Tests</div>
         </div>
-        <div class="folder-3d f-saved" onclick="openExamFolder('Saved')">
-            <div class="f-tab"></div>
-            <div class="f-body"><span class="f-icon">⭐</span><span class="f-name">Saved</span></div>
+        <div class="modern-cat-card" onclick="openExamFolder('Saved')">
+            <div class="modern-cat-icon ic-yellow">⭐</div>
+            <div class="modern-cat-name">Saved</div>
         </div>
-        <div class="folder-3d f-attempt" onclick="openExamFolder('Attempted')">
-            <div class="f-tab"></div>
-            <div class="f-body"><span class="f-icon">✅</span><span class="f-name">Attempted</span></div>
+        <div class="modern-cat-card" onclick="openExamFolder('Attempted')">
+            <div class="modern-cat-icon ic-green">✅</div>
+            <div class="modern-cat-name">Attempted</div>
         </div>
     `;
 
@@ -1784,13 +1746,20 @@ function renderDynamicFolders() {
 
     folders.forEach(f => {
         let folderData = JSON.stringify(f).replace(/'/g, "&#39;"); 
+        
+        // Convert old folder classes to new icon themes
+        let themeClass = "ic-blue";
+        if(f.colorClass) {
+            if(f.colorClass.includes('purple')) themeClass = "ic-purple";
+            else if(f.colorClass.includes('green')) themeClass = "ic-green";
+            else if(f.colorClass.includes('orange') || f.colorClass.includes('hin')) themeClass = "ic-orange";
+            else if(f.colorClass.includes('pink') || f.colorClass.includes('eng')) themeClass = "ic-pink";
+        }
+
         html += `
-        <div class="folder-3d ${f.colorClass || 'f-blue'}" onclick='openTreeFolder(${folderData})'>
-            <div class="f-tab"></div>
-            <div class="f-body center">
-                <span class="f-icon">${f.icon || '📁'}</span>
-                <span class="f-name">${f.name || 'Folder'}</span>
-            </div>
+        <div class="modern-cat-card" onclick='openTreeFolder(${folderData})'>
+            <div class="modern-cat-icon ${themeClass}">${f.icon || '📁'}</div>
+            <div class="modern-cat-name">${f.name || 'Folder'}</div>
         </div>`;
     });
 
