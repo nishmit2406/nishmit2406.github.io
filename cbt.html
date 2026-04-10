@@ -366,14 +366,14 @@ header { flex-shrink: 0; background: var(--gradient-header); box-shadow: 0 4px 2
     </header>
     <div style="flex: 1; overflow-y: auto; padding: 20px; width: 100%; max-width: 900px; margin: 0 auto; color: var(--text-main); font-size: 14px; padding-bottom: 100px;">
         
-        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+       <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
             <span id="declTimeStr">समय: 120 मिनट</span>
-            <span>पूर्णांक: 200</span>
+            <span id="declTotalMarks">पूर्णांक: --</span>
         </div>
 
         <h3 style="margin-top: 0; font-size: 15px;">निम्नलिखित निर्देश सावधानीपूर्वक पढ़ें:</h3>
         <ol style="padding-left: 20px; margin-bottom: 25px; line-height: 1.8; color: var(--text-muted);">
-            <li>टेस्ट में कुल प्रश्न हैं।</li>
+            <li>टेस्ट में <b id="declTotalQs" style="color:var(--primary);">--</b> कुल प्रश्न हैं।</li>
             <li>प्रत्येक प्रश्न में दिए गए 4 विकल्पों में से केवल 1 विकल्प सही उत्तर के रूप में उपलब्ध होगा।</li>
             <li>आपको निर्धारित समय में टेस्ट समाप्त करना होगा।</li>
             <li>आपको प्रत्येक सही उत्तर के लिए सकारात्मक अंक दिया जाएगा और गलत उत्तर के लिए नकारात्मक अंकन की कटौती की जाएगी।</li>
@@ -702,8 +702,15 @@ function initApp() {
               if (!SECTION_MAP.includes(secName)) SECTION_MAP.push(secName);
           });
           
-          const specificStorageKey = STORAGE_KEY + "_" + CURRENT_TEST_ID;
+        const specificStorageKey = STORAGE_KEY + "_" + CURRENT_TEST_ID;
           calcSectionIndices();
+          
+          // --- NEW: Inject Dynamic Data into Declaration Screen ---
+          const totalQs = QUESTIONS.length;
+          const totalMarks = totalQs * POSITIVE_MARK;
+          if(document.getElementById('declTotalQs')) document.getElementById('declTotalQs').innerText = totalQs;
+          if(document.getElementById('declTotalMarks')) document.getElementById('declTotalMarks').innerText = "पूर्णांक: " + totalMarks;
+          // --------------------------------------------------------
           
           if (TEST_MODE === 'solution') {
               const finalSaved = getSafeData(specificStorageKey + "_final");
@@ -787,7 +794,8 @@ function startExamFromDecl() {
     const agree = document.getElementById('agreeCheck').checked;
     if(!agree) return showToast("Please check the declaration box before starting.", "error");
 
-    document.getElementById('langBtn').innerText = lang;
+    // Added .trim() to prevent space issues
+    document.getElementById('langBtn').innerText = lang.trim();
     
     document.getElementById('declarationScreen').style.display = 'none';
     startGame(false);
@@ -933,7 +941,8 @@ window.toggleAppSolution = function(btn) {
 function loadQuestion(idx) {
   currentState.idx = idx; 
   const q = QUESTIONS[idx]; 
-  const isHindi = document.getElementById('langBtn').innerText === "HI";
+  const currentLangBtnText = document.getElementById('langBtn').innerText.trim().toUpperCase();
+  const isHindi = currentLangBtnText === "HI";
   
   const qSecIdx = SECTION_MAP.indexOf(q.section || "General");
   if(qSecIdx !== -1 && qSecIdx !== currentState.secIdx) {
@@ -1322,7 +1331,7 @@ function renderPalette() {
 
 function clearResponse() { currentState.answers[currentState.idx] = null; currentState.review[currentState.idx] = false; loadQuestion(currentState.idx); }
 function toggleTheme() { document.body.classList.toggle('dark-mode'); }
-function toggleLang() { const btn = document.getElementById('langBtn'); btn.innerText = btn.innerText === "HI" ? "EN" : "HI"; loadQuestion(currentState.idx); }
+function toggleLang() { const btn = document.getElementById('langBtn'); btn.innerText = btn.innerText.trim().toUpperCase() === "HI" ? "EN" : "HI"; loadQuestion(currentState.idx); }
 function openZoom(src) { document.getElementById('zoomImg').src = src; document.getElementById('zoomModal').style.display = 'flex'; }
 function closeZoom() { document.getElementById('zoomModal').style.display = 'none'; }
 function closeResult() { document.getElementById('resultModal').style.display = 'none'; }
