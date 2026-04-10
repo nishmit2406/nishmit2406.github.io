@@ -769,11 +769,12 @@ function validateLogin() {
     
     document.getElementById('startScreen').style.display = 'none';
     
-    // Quiz Mode या Solution Mode हो तो सीधा टेस्ट शुरू करें (Instructions Skip करें)
-    if (TEST_MODE === 'quiz' || TEST_MODE === 'solution') {
-        startGame(false);
+    // 🔥 NEW: Case-insensitive & robust check for Quiz and Solution modes
+    const currentMode = (TEST_MODE || "").toLowerCase();
+    if (currentMode.includes('quiz') || currentMode.includes('solution')) {
+        startGame(false); // Skip instructions and go direct to test/solution
     } else {
-        document.getElementById('instructionScreen').style.display = 'flex';
+        document.getElementById('instructionScreen').style.display = 'flex'; // Show instructions for normal exam
     }
 }
 
