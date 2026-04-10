@@ -941,8 +941,8 @@ function openExamFolder(folderId, isSubject = false) {
     catDropdown.value = 'all';
     statDropdown.value = 'all';
 
-    // Set exact dropdown values based on the folder clicked
-    if(folderId === 'my_attempts') statDropdown.value = 'attempted';
+   // Set exact dropdown values based on the folder clicked
+    if(folderId === 'my_attempts' || folderId === 'Attempted') statDropdown.value = 'attempted';
     else if(folderId === 'Live') statDropdown.value = 'live';
     else if(folderId === 'Saved') statDropdown.value = 'saved';
     else if(folderId === 'Full Mock') catDropdown.value = 'full';
@@ -1328,11 +1328,15 @@ async function fetchData(user) {
         if(document.getElementById('loader')) document.getElementById('loader').style.display = 'none'; 
         document.getElementById('app').style.display = 'block'; 
 
-        // 🚀 BACKGROUND FETCH: Leaderboard results silently
+      // 🚀 BACKGROUND FETCH: Leaderboard results silently
         db.ref("dsssb_results_live").once("value").then(resultsSnap => {
             const res = resultsSnap.val() || {};
+            
+            // 🔥 NEW: Add offline/unsynced tests so they show instantly in "Attempted"
+            let unsynced = JSON.parse(getSafeData('dsssb_unsynced_results') || '[]');
+            unsynced.forEach((uRes, i) => { res['unsynced_' + i] = uRes; });
+            
             let userMap = {}, myTestCount = 0, subScores = { 'Maths': [], 'English': [], 'Hindi': [], 'GK': [], 'Reasoning': [] };
-
             Object.values(res).forEach(r => {
                 let rName = r.name || "Student", safeScore = parseFloat(r.score) || 0;
                 if(!userMap[rName]) userMap[rName] = {s:0, c:0, isMe: false};
