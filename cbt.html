@@ -767,9 +767,14 @@ function validateLogin() {
     
     currentState.name = name.replace(" (Solution Mode)", "").replace(" (Quiz Mode)", "");
     
-    // Instead of starting game directly, show instructions
     document.getElementById('startScreen').style.display = 'none';
-    document.getElementById('instructionScreen').style.display = 'flex';
+    
+    // Quiz Mode या Solution Mode हो तो सीधा टेस्ट शुरू करें (Instructions Skip करें)
+    if (TEST_MODE === 'quiz' || TEST_MODE === 'solution') {
+        startGame(false);
+    } else {
+        document.getElementById('instructionScreen').style.display = 'flex';
+    }
 }
 
 function backToLogin() {
