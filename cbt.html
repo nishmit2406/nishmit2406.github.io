@@ -79,7 +79,6 @@ header { flex-shrink: 0; background: var(--gradient-header); box-shadow: 0 4px 2
 .q-text { font-size: 17px; line-height: 1.6; margin-bottom: 20px; font-weight: 500; color: var(--text-main); transition: font-size 0.2s; }
 .q-text img, .opt img { max-width: 100%; height: auto; border-radius: 8px; cursor: zoom-in; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 8px; }
 
-/* --- NEW: Question Badges inside Portal --- */
 .q-meta-badges { display: flex; gap: 8px; margin-bottom: 10px; font-size: 11px; flex-wrap: wrap; width: 100%; }
 .badge-topic { background: var(--primary-light); color: var(--primary-dark); padding: 4px 10px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(99, 102, 241, 0.2); }
 .badge-diff { padding: 4px 10px; border-radius: 6px; font-weight: 700; border: 1px solid var(--border-color); }
@@ -315,6 +314,100 @@ header { flex-shrink: 0; background: var(--gradient-header); box-shadow: 0 4px 2
     </div>
 </div>
 
+<div id="instructionScreen" class="full-overlay" style="display:none; justify-content: flex-start; padding: 0; background: var(--bg-body);">
+    <header style="width: 100%; position: sticky; top: 0; background: var(--bg-card); border-bottom: 1px solid var(--border-color); color: var(--text-main); display: flex; justify-content: center; align-items: center; z-index: 10; padding: 15px;">
+        <div style="font-size: 18px; font-weight: 800; color: var(--primary);">General Instructions</div>
+    </header>
+    <div style="flex: 1; overflow-y: auto; padding: 20px; width: 100%; max-width: 900px; margin: 0 auto; color: var(--text-main); font-size: 14px; line-height: 1.6; padding-bottom: 90px;">
+        <b>Please read the following instructions carefully:</b>
+        <ol style="padding-left: 20px; margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+            <li>The clock will be set at the server. The countdown timer at the top right corner of screen will display the remaining time available for you to complete the examination. When the timer reaches zero, the examination will end by itself.</li>
+            <li>The Question Palette displayed on the right side of screen will show the status of each question using one of the following symbols:
+                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:28px; height:28px; background:#f8fafc; border:2px solid #cbd5e1; border-radius:6px; flex-shrink:0;"></div> 
+                        You have not visited the question yet.
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:28px; height:28px; background:#fff; border:2px solid var(--border-color); border-radius:6px; color:var(--text-main); display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">1</div> 
+                        You have not answered the question.
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:28px; height:28px; background:var(--success); border-radius:6px; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">2</div> 
+                        You have answered the question.
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:28px; height:28px; background:var(--warning); border-radius:6px; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">3</div> 
+                        You have NOT answered the question, but have marked the question for review.
+                    </div>
+                </div>
+            </li>
+            <li><strong>Navigating to a Question:</strong> To answer a question, you can click on the question number in the Question Palette at the right of your screen to go to that numbered question directly.</li>
+            <li><strong>Answering a Question:</strong> 
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    <li>To select your answer, click on the button of one of the options.</li>
+                    <li>To deselect your chosen answer, click on the <b>Clear Response</b> button.</li>
+                    <li>To save your answer, you MUST click on the <b>Save & Next</b> button.</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+    <footer style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; z-index: 10;">
+        <div style="max-width: 900px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between;">
+            <button onclick="backToLogin()" style="padding: 10px 20px; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;">← टेस्ट पर वापस जाओ</button>
+            <button onclick="showDeclaration()" style="padding: 10px 25px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(99,102,241,0.3); transition: 0.2s;">अगला ➔</button>
+        </div>
+    </footer>
+</div>
+
+<div id="declarationScreen" class="full-overlay" style="display:none; justify-content: flex-start; padding: 0; background: var(--bg-body);">
+    <header style="width: 100%; position: sticky; top: 0; background: var(--bg-card); border-bottom: 1px solid var(--border-color); color: var(--text-main); display: flex; justify-content: center; align-items: center; z-index: 10; padding: 15px;">
+        <div style="font-size: 16px; font-weight: 800; color: var(--text-main); text-align: center;" id="declHeaderTitle">Memory-Based Paper</div>
+    </header>
+    <div style="flex: 1; overflow-y: auto; padding: 20px; width: 100%; max-width: 900px; margin: 0 auto; color: var(--text-main); font-size: 14px; padding-bottom: 100px;">
+        
+        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+            <span id="declTimeStr">समय: 120 मिनट</span>
+            <span>पूर्णांक: 200</span>
+        </div>
+
+        <h3 style="margin-top: 0; font-size: 15px;">निम्नलिखित निर्देश सावधानीपूर्वक पढ़ें:</h3>
+        <ol style="padding-left: 20px; margin-bottom: 25px; line-height: 1.8; color: var(--text-muted);">
+            <li>टेस्ट में कुल प्रश्न हैं।</li>
+            <li>प्रत्येक प्रश्न में दिए गए 4 विकल्पों में से केवल 1 विकल्प सही उत्तर के रूप में उपलब्ध होगा।</li>
+            <li>आपको निर्धारित समय में टेस्ट समाप्त करना होगा।</li>
+            <li>आपको प्रत्येक सही उत्तर के लिए सकारात्मक अंक दिया जाएगा और गलत उत्तर के लिए नकारात्मक अंकन की कटौती की जाएगी।</li>
+            <li>उन सवालों के लिए कोई नकारात्मक अंकन नहीं है जो आपने प्रयास नहीं किए हैं।</li>
+            <li>आप इस टेस्ट को केवल एक बार लिख सकते हैं। सुनिश्चित करें कि आप टेस्ट सबमिट करने से पहले और ब्राउज़र को बंद करने से पहले टेस्ट पूरा कर लें।</li>
+        </ol>
+
+        <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <label style="font-weight: bold; color: var(--text-main);">अपनी डिफ़ॉल्ट भाषा चुनें:</label>
+                <select id="defaultLangSelect" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); outline: none; font-family: inherit; font-weight: bold; cursor: pointer;">
+                    <option value="">-- Select --</option>
+                    <option value="EN">English</option>
+                    <option value="HI">हिंदी</option>
+                </select>
+            </div>
+            <div style="font-size: 12px; color: var(--danger); margin-top: 8px;">कृपया ध्यान दें कि सभी प्रश्न आपकी डिफ़ॉल्ट भाषा में दिखाई देंगे। इस भाषा को बाद में किसी विशेष प्रश्न के लिए बदला जा सकता है।</div>
+        </div>
+
+        <div style="background: rgba(99, 102, 241, 0.05); padding: 15px; border-radius: 8px; border: 1px solid var(--primary-light); display: flex; align-items: flex-start; gap: 12px;">
+            <input type="checkbox" id="agreeCheck" style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary);">
+            <label for="agreeCheck" style="cursor: pointer; font-size: 13px; color: var(--text-muted); line-height: 1.6; font-weight: 500;">
+                <b style="color: var(--text-main);">घोषणा:</b><br>
+                मैंने सभी निर्देशों को ध्यान से पढ़ा है और उन्हें समझ लिया है। मैं इस परीक्षा में धोखा न देने या अनुचित साधनों का उपयोग न करने के लिए सहमत हूँ। मैं समझता हूँ कि मेरे या किसी और के लाभ के लिए किसी भी प्रकार के अनुचित साधनों का उपयोग करने से मेरी योग्यता तत्काल खत्म कर दी जायेगी। इन मामलों में Admin का निर्णय अंतिम होगा और इस मामले में अपील नहीं की जा सकती है।
+            </label>
+        </div>
+    </div>
+    <footer style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; z-index: 10;">
+         <div style="max-width: 900px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between;">
+            <button onclick="backToInstructions()" style="padding: 10px 20px; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;">पीछे जाएं</button>
+            <button onclick="startExamFromDecl()" style="padding: 10px 20px; background: var(--gradient-main); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(99,102,241,0.3); transition: 0.2s;">मैं शुरू करने के लिए तैयार हूँ</button>
+        </div>
+    </footer>
+</div>
 <header>
     <div class="brand">
         <span>🛡️</span> 
@@ -486,19 +579,16 @@ setInterval(function() {
   }
 }, 1000);
 
-// FIX 1: Removed faulty auto-submit on window resize for laptop users
 window.addEventListener('resize', function() {
-    // Ab laptop par window resize karne par test automatically submit nahi hoga.
     console.log("Window resized."); 
 });
 
 if (window.top !== window.self) { window.top.location = window.self.location; }
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-// FIX 2: Disabled 'Enter' key so accidental submit doesn't happen
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
-      e.preventDefault(); // Enter dabane se koi button press nahi hoga
+      e.preventDefault(); 
   }
   if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) || (e.ctrlKey && ['U', 'S', 'P', 'H'].includes(e.key.toUpperCase()))) {
       e.preventDefault(); e.stopPropagation(); alert("🚨 Unauthorized action detected!"); return false;
@@ -560,6 +650,9 @@ function handleSwipe() {
 function initApp() {
   document.getElementById('displayTitle').innerText = CURRENT_TEST_TITLE;
   document.title = CURRENT_TEST_TITLE;
+  document.getElementById('declHeaderTitle').innerText = CURRENT_TEST_TITLE;
+  document.getElementById('declTimeStr').innerText = `समय: ${TOTAL_TIME_MINS} मिनट`;
+
   syncOfflineResults(); 
 
   document.getElementById('posMarkDisp').innerText = POSITIVE_MARK;
@@ -598,7 +691,6 @@ function initApp() {
   });
 
   db.ref('dsssb_questions_db/' + CURRENT_TEST_ID).once('value').then(snap => {
-      // Hide Preloader once data is fetched
       const preloader = document.getElementById('preloader');
       if (preloader) preloader.style.display = 'none';
       
@@ -660,20 +752,56 @@ function calcSectionIndices() {
   }); 
 }
 
+/* ================= NEW NAVIGATION LOGIC ================= */
 function validateLogin() {
-  if(QUESTIONS.length === 0) return showToast("Loading test data, please wait...", "warning");
-  const name = document.getElementById('startNameInput').value.trim();
-  if(!name) return showToast("Name is missing!", "error");
-  
-  currentState.name = name.replace(" (Solution Mode)", "").replace(" (Quiz Mode)", "");
-  startGame(false);
+    if(QUESTIONS.length === 0) return showToast("Loading test data, please wait...", "warning");
+    const name = document.getElementById('startNameInput').value.trim();
+    if(!name) return showToast("Name is missing!", "error");
+    
+    currentState.name = name.replace(" (Solution Mode)", "").replace(" (Quiz Mode)", "");
+    
+    // Instead of starting game directly, show instructions
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('instructionScreen').style.display = 'flex';
 }
 
+function backToLogin() {
+    document.getElementById('instructionScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'flex';
+}
+
+function showDeclaration() {
+    document.getElementById('instructionScreen').style.display = 'none';
+    document.getElementById('declarationScreen').style.display = 'flex';
+}
+
+function backToInstructions() {
+    document.getElementById('declarationScreen').style.display = 'none';
+    document.getElementById('instructionScreen').style.display = 'flex';
+}
+
+function startExamFromDecl() {
+    const lang = document.getElementById('defaultLangSelect').value;
+    if(!lang) return showToast("Please select your default language! (डिफ़ॉल्ट भाषा चुनें)", "error");
+
+    const agree = document.getElementById('agreeCheck').checked;
+    if(!agree) return showToast("Please check the declaration box before starting.", "error");
+
+    document.getElementById('langBtn').innerText = lang;
+    
+    document.getElementById('declarationScreen').style.display = 'none';
+    startGame(false);
+}
+/* ======================================================== */
+
 function startGame(isResuming) {
+  // Hide all overlays to be safe
   document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('instructionScreen').style.display = 'none';
+  document.getElementById('declarationScreen').style.display = 'none';
+
   document.querySelector('header').style.display = 'flex';
   document.getElementById('mainArea').style.display = 'block';
-  
   document.getElementById('examFooter').style.display = 'flex';
   
   if(!isResuming) {
@@ -815,7 +943,6 @@ function loadQuestion(idx) {
 
   document.getElementById('qNumDisp').innerText = idx + 1;
   
-  // --- ADD META BADGES HERE ---
   const metaContainer = document.getElementById('qMetaData');
   let metaHtml = "";
   if (q.topic) {
@@ -829,7 +956,6 @@ function loadQuestion(idx) {
       else if (dL === 'hard') metaHtml += `<span class="badge-diff hard">🔴 ${diffLabel}</span>`;
   }
   metaContainer.innerHTML = metaHtml;
-  // ----------------------------
 
   const contentDiv = document.getElementById('qContent');
   contentDiv.innerHTML = isHindi ? (q.q_hi || q.q_en) : (q.q_en || q.q_hi);
@@ -1369,7 +1495,6 @@ async function submitTest() {
   let totalScore = 0, correct = 0, wrong = 0, skipped = 0;
   let sectionScores = {};
   
-  // NEW: Tracking Data for AI Analysis
   let topicStats = {};
   let fastest = 9999;
   let slowest = 0;
@@ -1381,11 +1506,9 @@ async function submitTest() {
       if(!sectionScores[secName]) sectionScores[secName] = {c:0, w:0, s:0, total:0};
       sectionScores[secName].total++;
       
-      // Tracking Topics
       let topicName = q.topic || "General";
       if(!topicStats[topicName]) topicStats[topicName] = {c:0, w:0, s:0};
       
-      // Tracking Time
       let timeForThisQ = currentState.timePerQ[i] || 0;
       if(timeForThisQ > slowest) slowest = timeForThisQ;
       if(timeForThisQ < fastest && timeForThisQ > 0) fastest = timeForThisQ;
@@ -1420,7 +1543,6 @@ async function submitTest() {
   const timeSpentSeconds = (TOTAL_TIME_MINS * 60) - currentState.time;
   const timeStr = `${Math.floor(timeSpentSeconds/60)}m ${timeSpentSeconds%60}s`;
   
-  // NEW: Save data for Deep Analysis Page
   const analysisData = {
       correct: correct,
       wrong: wrong,
@@ -1432,7 +1554,6 @@ async function submitTest() {
   };
   setSafeData('dsssb_analysis_data', JSON.stringify(analysisData));
   
-  // 🔥 NEW FIX: Save Data for Replay Mode and Battle Mode 🔥
   setSafeData('dsssb_replay_qs', JSON.stringify(QUESTIONS));
   setSafeData('dsssb_replay_state', JSON.stringify(currentState));
 
@@ -1617,12 +1738,6 @@ async function submitTest() {
 
       resBox.innerHTML = html;
 
-      new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: ['Correct', 'Wrong', 'Skipped'], datasets: [{ data: [correct, wrong, skipped], backgroundColor: ['#10b981', '#ef4444', '#f59e0b'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display:false } } } });
-      const secLabels = Object.keys(sectionScores);
-      const secCorrect = secLabels.map(s => sectionScores[s].c);
-      const secWrong = secLabels.map(s => sectionScores[s].w);
-      const secSkipped = secLabels.map(s => sectionScores[s].s);
-      new Chart(document.getElementById('barChart'), { type: 'bar', data: { labels: secLabels, datasets: [{ label: 'Correct', data: secCorrect, backgroundColor: '#10b981' }, { label: 'Wrong', data: secWrong, backgroundColor: '#ef4444' }, { label: 'Skipped', data: secSkipped, backgroundColor: '#f59e0b' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { display:false } } } });
   });
 }
 
@@ -1686,7 +1801,6 @@ if ('serviceWorker' in navigator) {
 
   <script>
 (function() {
-    // Check if Firebase is loaded, otherwise init
     const trackerConfig = { 
         apiKey: "AIzaSyDGolcXv0efZxRdOvBthfeT72mkNLLbAwI", 
         authDomain: "dsssbexamportal.firebaseapp.com", 
@@ -1707,25 +1821,22 @@ if ('serviceWorker' in navigator) {
             localStorage.setItem('dsssb_user_id', trackUid);
         }
 
-        // Determine current page activity
         let loc = window.location.pathname.split('/').pop() || 'index.html';
         if(loc.includes('cbt.html')) loc = 'Giving Mock Test 📝';
         else if(loc.includes('index.html') || loc === '') loc = 'On Dashboard 🏠';
         else loc = 'Exploring Portal 🔍';
 
-        // 1. Update Total/Weekly Users
         trackDb.ref('dsssb_analytics/users/' + trackUid).update({
             name: trackUname,
             last_active: firebase.database.ServerValue.TIMESTAMP
         });
 
-        // 2. Update Live Presence
         const connRef = trackDb.ref('.info/connected');
         const presRef = trackDb.ref('dsssb_analytics/presence/' + trackUid);
 
         connRef.on('value', (snap) => {
             if (snap.val() === true) {
-                presRef.onDisconnect().remove(); // Tab close hote hi offline
+                presRef.onDisconnect().remove(); 
                 presRef.set({ 
                     name: trackUname, 
                     activity: loc, 
