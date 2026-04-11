@@ -375,10 +375,14 @@ header { flex-shrink: 0; background: var(--gradient-header); box-shadow: 0 4px 2
     </header>
     <div style="flex: 1; overflow-y: auto; padding: 20px; width: 100%; max-width: 900px; margin: 0 auto; color: var(--text-main); font-size: 14px; padding-bottom: 100px;">
         
-       <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
-            <span id="declTimeStr">समय: 120 मिनट</span>
-            <span id="declTotalMarks">पूर्णांक: --</span>
-        </div>
+      <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--border-color);">
+            <span id="declTimeStr">समय: 120 मिनट</span>
+            <span id="declTotalMarks">पूर्णांक: --</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+            <span id="declPosMark" style="color: var(--success);">सही उत्तर: +1.0</span>
+            <span id="declNegMark" style="color: var(--danger);">नकारात्मक अंक (Negative): -0.25</span>
+        </div>
 
         <h3 style="margin-top: 0; font-size: 15px;">निम्नलिखित निर्देश सावधानीपूर्वक पढ़ें:</h3>
         <ol style="padding-left: 20px; margin-bottom: 25px; line-height: 1.8; color: var(--text-muted);">
@@ -714,13 +718,14 @@ function initApp() {
         const specificStorageKey = STORAGE_KEY + "_" + CURRENT_TEST_ID;
           calcSectionIndices();
           
-          // --- NEW: Inject Dynamic Data into Declaration Screen ---
-          const totalQs = QUESTIONS.length;
-          const totalMarks = totalQs * POSITIVE_MARK;
-          if(document.getElementById('declTotalQs')) document.getElementById('declTotalQs').innerText = totalQs;
-          if(document.getElementById('declTotalMarks')) document.getElementById('declTotalMarks').innerText = "पूर्णांक: " + totalMarks;
-          // --------------------------------------------------------
-          
+        // --- NEW: Inject Dynamic Data into Declaration Screen ---
+          const totalQs = QUESTIONS.length;
+          const totalMarks = totalQs * POSITIVE_MARK;
+          if(document.getElementById('declTotalQs')) document.getElementById('declTotalQs').innerText = totalQs;
+          if(document.getElementById('declTotalMarks')) document.getElementById('declTotalMarks').innerText = "पूर्णांक: " + totalMarks;
+          if(document.getElementById('declPosMark')) document.getElementById('declPosMark').innerText = "सही उत्तर: +" + POSITIVE_MARK;
+          if(document.getElementById('declNegMark')) document.getElementById('declNegMark').innerText = "नकारात्मक अंक (Negative): -" + NEGATIVE_MARK;
+          // --------------------------------------------------------
           if (TEST_MODE === 'solution') {
               const finalSaved = getSafeData(specificStorageKey + "_final");
               if (finalSaved) { currentState = JSON.parse(finalSaved); } 
