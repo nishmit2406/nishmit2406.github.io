@@ -76,9 +76,9 @@ header { flex-shrink: 0; background: var(--gradient-header); box-shadow: 0 4px 2
 #mainArea { flex: 1; padding: 15px 15px 120px 15px; overflow-y: auto; overflow-x: hidden; display: none; position: relative; -webkit-overflow-scrolling: touch; }
 .q-card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 20px; box-shadow: var(--shadow-sm); margin-top: 10px; margin-bottom: 25px; transition: transform 0.2s; }
 .q-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed var(--border-color); padding-bottom: 12px; font-size: 14px; color: var(--text-muted); font-weight: 600; align-items: center; flex-wrap: wrap; gap: 10px; }
-.q-text { font-size: 17px; line-height: 1.6; margin-bottom: 20px; font-weight: 500; color: var(--text-main); transition: font-size 0.2s; }
-.q-text img, .opt img { max-width: 100%; height: auto; border-radius: 8px; cursor: zoom-in; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 8px; }
-
+.q-text { font-size: 17px; line-height: 1.6; margin-bottom: 20px; font-weight: 500; color: var(--text-main); transition: font-size 0.2s; overflow-wrap: break-word; word-wrap: break-word; overflow-x: auto; width: 100%; }
+.q-text img, .opt img { max-width: 100% !important; height: auto !important; object-fit: contain; border-radius: 8px; cursor: zoom-in; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 8px; }
+.q-text table, .opt table { max-width: 100% !important; overflow-x: auto; display: block; border-collapse: collapse; }
 .q-meta-badges { display: flex; gap: 8px; margin-bottom: 10px; font-size: 11px; flex-wrap: wrap; width: 100%; }
 .badge-topic { background: var(--primary-light); color: var(--primary-dark); padding: 4px 10px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(99, 102, 241, 0.2); }
 .badge-diff { padding: 4px 10px; border-radius: 6px; font-weight: 700; border: 1px solid var(--border-color); }
