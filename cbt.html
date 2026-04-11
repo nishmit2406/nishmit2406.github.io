@@ -208,15 +208,7 @@ header { flex-shrink: 0; background: var(--gradient-header); box-shadow: 0 4px 2
     .nav-btn { padding: 6px 8px; font-size: 12px; }
     .timer-badge { font-size: 12px; padding: 4px 6px; }
     .sec-tab { padding: 0 12px; font-size: 12px; height: 32px; }
-    
-    /* Mobile Image Font Size & Scroll Fix */
     .q-card { padding: 12px !important; }
-    .q-text, .opt { overflow-x: auto !important; -webkit-overflow-scrolling: touch; padding-bottom: 5px; }
-    .q-text img, .opt img { max-width: none !important; min-width: 500px !important; width: auto !important; }
-    
-    /* Zoom Image Fix for Mobile */
-    #zoomImg { max-width: none !important; min-width: 600px !important; }
-    #zoomModal { overflow: auto !important; align-items: flex-start !important; padding: 20px !important; }
 }
 
 @media(min-width: 1024px) {
@@ -277,10 +269,11 @@ header { flex-shrink: 0; background: var(--gradient-header); box-shadow: 0 4px 2
   <button class="tg-btn-continue" onclick="closeTg()">Continue Test</button>
 </div>
 
-<div id="zoomModal" onclick="closeZoom()" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:5000; display:none; justify-content:center; align-items:center; flex-direction:column;">
-    <span style="position:absolute; top:20px; right:20px; font-size:40px; color:#fff; cursor:pointer;">&times;</span>
-    <img id="zoomImg" src="" style="max-width:95%; max-height:80vh; border-radius:12px; box-shadow:0 0 50px rgba(255,255,255,0.1);">
-    <div style="color:#fff; margin-top:15px; font-size:14px; opacity:0.7;">Click anywhere to close</div>
+<div id="zoomModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:5000; display:none; overflow:auto;">
+    <span onclick="closeZoom()" style="position:fixed; top:20px; right:20px; font-size:40px; color:#fff; cursor:pointer; z-index:5001; background:rgba(0,0,0,0.6); width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; line-height: 1;">&times;</span>
+    <div style="display:flex; justify-content:center; align-items:center; min-height:100vh; padding:20px; width: 100%;">
+        <img id="zoomImg" src="" style="width:100%; max-width:none; border-radius:8px;">
+    </div>
 </div>
 
 <div id="paletteOverlay" onclick="togglePalette()" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1900; display:none; backdrop-filter:blur(2px);"></div>
@@ -1352,8 +1345,47 @@ function renderPalette() {
 function clearResponse() { currentState.answers[currentState.idx] = null; currentState.review[currentState.idx] = false; loadQuestion(currentState.idx); }
 function toggleTheme() { document.body.classList.toggle('dark-mode'); }
 function toggleLang() { const btn = document.getElementById('langBtn'); btn.innerText = btn.innerText.trim().toUpperCase() === "HI" ? "EN" : "HI"; loadQuestion(currentState.idx); }
-function openZoom(src) { document.getElementById('zoomImg').src = src; document.getElementById('zoomModal').style.display = 'flex'; }
-function closeZoom() { document.getElementById('zoomModal').style.display = 'none'; }
+function openZoom(src) { 
+    document.getElementById('zoomImg').src = src; 
+    document.getElementById('zoomImg').style.width = '100%'; // Reset size on open
+    currentZoomWidth = 100; // Reset zoom logic
+    document.getElementById('zoomModal').style.display = 'block'; 
+}
+function closeZoom() { 
+    document.getElementById('zoomModal').style.display = 'none'; 
+}
+
+// === Pinch to Zoom Logic for Mobile ===
+let currentZoomWidth = 100;
+let initialPinchDist = null;
+const zModal = document.getElementById('zoomModal');
+const zImg = document.getElementById('zoomImg');
+
+zModal.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) { // When two fingers touch
+        initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    }
+}, { passive: false });
+
+zModal.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && initialPinchDist) {
+        e.preventDefault(); // Prevent default page scrolling while pinching
+        let newDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        let scale = newDist / initialPinchDist;
+        let newWidth = currentZoomWidth * scale;
+
+        if (newWidth >= 100 && newWidth <= 500) { // Limit stretch between 1x and 5x
+            zImg.style.width = newWidth + '%';
+        }
+    }
+}, { passive: false });
+
+zModal.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) {
+        initialPinchDist = null; // Reset fingers
+        currentZoomWidth = parseFloat(zImg.style.width) || 100; // Save current stretch level
+    }
+});
 function closeResult() { document.getElementById('resultModal').style.display = 'none'; }
 
 function openNotebook() {
