@@ -202,12 +202,21 @@ header { flex-shrink: 0; background: var(--gradient-header); box-shadow: 0 4px 2
 .toggle-discuss-btn:hover { background: var(--primary-light); }
 
 @media(max-width: 480px) {
-    #palettePanel { width: 85%; } 
-    .brand span:nth-child(2) { font-size: 15px; }
-    .header-tools { gap: 4px; }
-    .nav-btn { padding: 6px 8px; font-size: 12px; }
-    .timer-badge { font-size: 12px; padding: 4px 6px; }
-    .sec-tab { padding: 0 12px; font-size: 12px; height: 32px; }
+    #palettePanel { width: 85%; } 
+    .brand span:nth-child(2) { font-size: 15px; }
+    .header-tools { gap: 4px; }
+    .nav-btn { padding: 6px 8px; font-size: 12px; }
+    .timer-badge { font-size: 12px; padding: 4px 6px; }
+    .sec-tab { padding: 0 12px; font-size: 12px; height: 32px; }
+    
+    /* Mobile Image Font Size & Scroll Fix */
+    .q-card { padding: 12px !important; }
+    .q-text, .opt { overflow-x: auto !important; -webkit-overflow-scrolling: touch; padding-bottom: 5px; }
+    .q-text img, .opt img { max-width: none !important; min-width: 500px !important; width: auto !important; }
+    
+    /* Zoom Image Fix for Mobile */
+    #zoomImg { max-width: none !important; min-width: 600px !important; }
+    #zoomModal { overflow: auto !important; align-items: flex-start !important; padding: 20px !important; }
 }
 
 @media(min-width: 1024px) {
