@@ -434,17 +434,12 @@ textarea { height: 120px; resize: none; }
             <div class="nb-icon-box"><i class="fas fa-chevron-right"></i></div>
         </div>
 
-       <div class="section-title" style="margin: 25px 20px 10px;">📂 Explore Categories</div>
-        <div style="position: relative; margin: 0 15px;">
-            <button class="desk-scroll-btn left-btn" onclick="document.getElementById('catBox').scrollBy({left: -350, behavior: 'smooth'})"><i class="fas fa-chevron-left"></i></button>
-            <button class="desk-scroll-btn right-btn" onclick="document.getElementById('catBox').scrollBy({left: 350, behavior: 'smooth'})"><i class="fas fa-chevron-right"></i></button>
-            
-           <div class="horizontal-3d-scroll" id="catBox" style="margin: 0 5px;">
-                <div style="text-align:center; padding: 20px; color:var(--text-muted); width: 100%;">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading Folders...
-                </div>
+       <div class="section-title" style="margin: 25px 20px 10px;">📂 Exam Categories</div>
+       <div id="dynamicTreeContainer" style="padding: 0 20px;">
+            <div style="text-align:center; padding: 20px; color:var(--text-muted); width: 100%;">
+                <i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading Structure...
             </div>
-        </div>
+       </div>
 
      <div class="target-exams-section">
             <div class="section-title">🎯 Specific Exams</div>
@@ -1419,7 +1414,7 @@ function applyModernFilters() {
             const cat = (t.category||"").toLowerCase();
             const tags = (t.tag||"").toLowerCase() + " " + (t.tags||"").toLowerCase();
             
-            if(categoryFilter === 'full') return cat.includes('full') || title.includes('full');
+            if(categoryFilter === 'full' || categoryFilter.includes('full')) return cat.includes('full') || title.includes('full') || tags.includes('full');
             if(categoryFilter === 'math') return title.includes('math') || cat.includes('math') || tags.includes('math') || title.includes('quant');
             if(categoryFilter === 'reasoning') return title.includes('reas') || cat.includes('reas') || tags.includes('reas') || title.includes('logic');
             if(categoryFilter === 'english') return title.includes('eng') || cat.includes('eng') || tags.includes('eng');
@@ -1731,43 +1726,67 @@ function fetchDynamicFolders() {
 }
 
 function renderDynamicFolders() {
-    let html = `
-        <div class="modern-cat-card" onclick="openExamFolder('Live')">
-            <div class="modern-cat-icon ic-red">🔴</div>
-            <div class="modern-cat-name">Live Tests</div>
-        </div>
-        <div class="modern-cat-card" onclick="openExamFolder('Saved')">
-            <div class="modern-cat-icon ic-yellow">⭐</div>
-            <div class="modern-cat-name">Saved</div>
-        </div>
-        <div class="modern-cat-card" onclick="openExamFolder('Attempted')">
-            <div class="modern-cat-icon ic-green">✅</div>
-            <div class="modern-cat-name">Attempted</div>
-        </div>
-    `;
+        let defaultTools = `
+        <div class="modern-cat-grid" style="margin-bottom: 25px;">
+            <div class="modern-cat-card" onclick="openExamFolder('Live')">
+                <div class="modern-cat-icon ic-red">🔴</div>
+                <div class="modern-cat-name">Live Tests</div>
+            </div>
+            <div class="modern-cat-card" onclick="openExamFolder('Saved')">
+                <div class="modern-cat-icon ic-yellow">⭐</div>
+                <div class="modern-cat-name">Saved</div>
+            </div>
+            <div class="modern-cat-card" onclick="openExamFolder('Attempted')">
+                <div class="modern-cat-icon ic-green">✅</div>
+                <div class="modern-cat-name">Attempted</div>
+            </div>
+        </div>`;
 
-    let folders = Object.values(dynamicFolders).sort((a,b) => (a.order || 99) - (b.order || 99));
-
-    folders.forEach(f => {
-        let folderData = JSON.stringify(f).replace(/'/g, "&#39;"); 
+        let folders = Object.values(dynamicFolders).sort((a,b) => (a.order || 99) - (b.order || 99));
         
-        // Convert old folder classes to new icon themes
-        let themeClass = "ic-blue";
-        if(f.colorClass) {
-            if(f.colorClass.includes('purple')) themeClass = "ic-purple";
-            else if(f.colorClass.includes('green')) themeClass = "ic-green";
-            else if(f.colorClass.includes('orange') || f.colorClass.includes('hin')) themeClass = "ic-orange";
-            else if(f.colorClass.includes('pink') || f.colorClass.includes('eng')) themeClass = "ic-pink";
+        // 🌳 Grouping logic (Tree Structure Level 1: Boards)
+        let groupedByBoard = {};
+        folders.forEach(f => {
+            let boardName = f.board || "Other Exams"; // Fetching board name from Firebase
+            if(!groupedByBoard[boardName]) groupedByBoard[boardName] = [];
+            groupedByBoard[boardName].push(f);
+        });
+
+        let treeHtml = defaultTools;
+
+        for (let board in groupedByBoard) {
+            treeHtml += `
+            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                <div onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.querySelector('i').style.transform = this.nextElementSibling.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';" 
+                     style="padding: 15px 20px; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02);">
+                    <span>🏛️ ${board}</span>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--text-muted);"></i>
+                </div>
+                <div style="display: none; padding: 15px 20px; border-top: 1px solid var(--border);">
+                    <div class="modern-cat-grid">`;
+            
+            groupedByBoard[board].forEach(f => {
+                let folderData = JSON.stringify(f).replace(/'/g, "&#39;"); 
+                let themeClass = "ic-blue";
+                if(f.colorClass) {
+                    if(f.colorClass.includes('purple')) themeClass = "ic-purple";
+                    else if(f.colorClass.includes('green')) themeClass = "ic-green";
+                    else if(f.colorClass.includes('orange') || f.colorClass.includes('hin')) themeClass = "ic-orange";
+                    else if(f.colorClass.includes('pink') || f.colorClass.includes('eng')) themeClass = "ic-pink";
+                }
+
+                treeHtml += `
+                <div class="modern-cat-card" onclick='openTreeFolder(${folderData})'>
+                    <div class="modern-cat-icon ${themeClass}">${f.icon || '📝'}</div>
+                    <div class="modern-cat-name">${f.name || 'Exam'}</div>
+                </div>`;
+            });
+
+            treeHtml += `</div></div></div>`;
         }
 
-        html += `
-        <div class="modern-cat-card" onclick='openTreeFolder(${folderData})'>
-            <div class="modern-cat-icon ${themeClass}">${f.icon || '📁'}</div>
-            <div class="modern-cat-name">${f.name || 'Folder'}</div>
-        </div>`;
-    });
-
-    document.getElementById('catBox').innerHTML = html;
+        let container = document.getElementById('dynamicTreeContainer');
+        if(container) container.innerHTML = treeHtml;
 }
 
 function openTreeFolder(folderObj) {
@@ -1801,16 +1820,19 @@ function filterDynamicTests(examKey, subFilterKey, pillEl) {
         list = list.filter(t => (t.category||"").toLowerCase().includes(targetExam) || (t.title||"").toLowerCase().includes(targetExam));
     }
 
-    if (subFilterKey && subFilterKey !== 'all') {
-        let targetSub = subFilterKey.toLowerCase();
-        list = list.filter(t => {
-            let cat = (t.category||"").toLowerCase();
-            let title = (t.title||"").toLowerCase();
-            if(targetSub === 'full') return cat.includes('full') || title.includes('full');
-            if(targetSub === 'sectional') return !(cat.includes('full') || title.includes('full'));
-            return cat.includes(targetSub) || title.includes(targetSub);
-        });
-    }
+   if (subFilterKey && subFilterKey !== 'all') {
+                let targetSub = subFilterKey.toLowerCase().trim();
+                list = list.filter(t => {
+                    let cat = (t.category||"").toLowerCase();
+                    let title = (t.title||"").toLowerCase();
+                    let tags = (t.tag||"").toLowerCase() + " " + (t.tags||"").toLowerCase();
+                    
+                    if(targetSub.includes('full')) return cat.includes('full') || title.includes('full') || tags.includes('full');
+                    if(targetSub === 'sectional') return !(cat.includes('full') || title.includes('full') || tags.includes('full'));
+                    
+                    return cat.includes(targetSub) || title.includes(targetSub) || tags.includes(targetSub);
+                });
+            }
 
     let html = "";
     let savedTests = JSON.parse(getSafeData('savedTests') || '[]');
